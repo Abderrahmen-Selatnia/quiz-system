@@ -174,8 +174,6 @@ int signup()
     }
 }
 
-int deletefrom(const char filename[15], char valuetoD[])
-{
+int deletefrom(const char filename[15], char valuetoD[]){
 
-    FILE *file = fopen(filename, "")
-}
+    FILE *file = fopen(filename, "")} pk did tis work
