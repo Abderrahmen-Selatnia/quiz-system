@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdio.h>
 #include <strings.h>
+#include <string.h>
 #include <time.h>
 #include <stdbool.h>
 
 int greeting()
 {
 
-    printf("################## Hello, welcome to the Quizing system ######################\n press enter to sing up else \n 'A' to authentecate ");
+    printf("################## Hello, welcome to the Quizing system ######################\n press enter to sing in else \n 'n' to sing up ");
 }
 
 int login()
@@ -34,6 +35,7 @@ int login()
             if (strcasecmp(p, temppass) == 0)
             {
                 printf("welcome admin\n");
+                fgets(&username, sizeof(username), u);
                 return 1;
             }
             else
@@ -45,9 +47,9 @@ int login()
     }
     else
     {
-        if (Uline = checker(u, "users.txt") != 0)
+        if (checker(u, "users.txt") != 0)
         {
-
+            Uline = checker(u, "users.txt");
             printf("Now please type the password: \n>");
 
             FILE *fpp = fopen("passwords.txt", "r");
@@ -63,6 +65,8 @@ int login()
                 if (linecheck(p, Uline, "paswords.txt"))
                 {
                     printf("welcome");
+                    fgets(&username, sizeof(username), u);
+                    return 2;
                 }
                 else
                 {
@@ -70,9 +74,6 @@ int login()
                     tryes++;
                 }
             } while (strcasecmp(p, temppass) != 0 && tryes < 4);
-        }
-        else
-        {
         }
     }
 }
@@ -145,17 +146,32 @@ int linecheck(char tochek[50], int lineN, const char filename[])
     }
 }
 
-int signup()
+int signup(int i)
 {
 
     char u[32], p[32];
-    printf("Welcome to singup please start with typing your username: \n>");
+    if (i = 2)
+    {
+        printf("Welcome to singup please start with typing your username: \n>");
+    }
+    else
+    {
+        printf("please enter the username: \n>");
+    }
+
     fgets(u, sizeof(u, stdin));
 
     if (checker(u, "users.txt") != 0)
     {
-        printf("Now please type your password: \n>");
-        fgets(p, sizeof(p, stdin));
+        if (i = 2)
+        {
+            printf("now please type your pasword: \n>");
+        }
+        else
+        {
+            printf("please enter the acount password: \n>");
+        }
+        fgets(p, sizeof(p), stdin);
         FILE *fpu = fopen("users.txt", "a");
         FILE *fpp = fopen("passwords.txt", "a");
 
@@ -169,13 +185,232 @@ int signup()
             fprintf(fpp, "%s", p);
             fclose(fpu);
             fclose(fpp);
-            printf("you are now signed up");
+            if (i = 2)
+            {
+                printf("Welcome your singedup: \n>");
+            }
+            else
+            {
+                printf("the user added secsefully: \n>");
+            }
         }
     }
 }
 
-int deletefrom(const char filename[15], char valuetoD[])
+int delete(const char filename[15], char valuetoD[])
+{
+    const char tempfile[15];
+    char readingtemp[50];
+
+    strcpy(tempfile, filename);
+    strcat(tempfile, "tempC");
+    FILE *file = fopen(filename, "r");
+    FILE *temp = fopen(tempfile, "w");
+    if (file == NULL || temp == NULL)
+    {
+        printf("error opning a file ");
+        return -1;
+    }
+    else
+    {
+        while (fscanf(file, "s", readingtemp) != 0)
+        {
+            if (strcasecmp(readingtemp, valuetoD) == 0)
+            {
+                continue;
+            }
+            else
+            {
+                fprintf(temp, "s\n", readingtemp);
+            }
+        }
+        if (checker(valuetoD, filename) == 0)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+}
+
+int edit(const char filename[15], char valuetoD[500], char newvalue[500])
 {
 
-    FILE *file = fopen(filename, "")
+    const char tempfile[15];
+    char readingtemp[500];
+
+    strcpy(tempfile, filename);
+    strcat(tempfile, "tempC");
+    FILE *file = fopen(filename, "r");
+    FILE *temp = fopen(tempfile, "w");
+    if (file == NULL || temp == NULL)
+    {
+        printf("error opning a file ");
+        return -1;
+    }
+    else
+    {
+        while (fscanf(file, "s", readingtemp) != 0)
+        {
+            if (strcasecmp(readingtemp, valuetoD) == 0)
+            {
+                fprintf(temp, "s", newvalue);
+            }
+            else
+            {
+                fprintf(temp, "s\n", readingtemp);
+            }
+        }
+        if (checker(valuetoD, filename) == 0)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+}
+
+int howmanyline(const char filename[15])
+{
+    int linenumber = 1;
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        printf("error opning a file");
+        return -1;
+    }
+
+    while (feof(file) != 0)
+    {
+        linenumber++;
+    }
+    return linenumber;
+}
+int quizing(char username[])
+{
+
+    int line, linenumber = 1;
+    char tempQ[300];
+    srand(time(NULL));
+    line = rand() % (howmanyline("questions"), 1);
+    FILE *file = fopen("questions", "r");
+    if (file == NULL)
+    {
+        printf("error opning file");
+        return -1;
+    }
+
+    while (fscanf("questions", "s", tempQ) != 0)
+    {
+
+        if (linenumber == line)
+        {
+            fprintf(tempQ, "s", stdout);
+            break;
+        }
+        linenumber++;
+    }
+    return linenumber;
+}
+int chekanswer(char answer[500], int Qlinenumber)
+{
+    FILE *file = fopen("aswers", "r");
+    if (file == NULL)
+    {
+        printf("error opning a file ");
+        return -1;
+    }
+    char rightA[500], tempA[500];
+
+    int linenumber = 1;
+    while (fscanf(file, "s", &tempA))
+    {
+        if (strcmp(tempA, answer) == 0 && linenumber == Qlinenumber)
+        {
+            strcpy(rightA, tempA);
+            printf("right answer \n>");
+            return 1;
+        }
+        else
+        {
+            printf("wrong answer \n>");
+            printf("ther right answer was :%s", rightA);
+            return 0;
+        }
+        linenumber++;
+    }
+}
+int scorcaculator(int answerscor, int *result, int *secsesif)
+{
+
+    if (answerscor = 0)
+    {
+        result -= secsesif;
+        secsesif = 0;
+        printf("that is not the right way son \n");
+    }
+    else
+    {
+        result++;
+        secsesif++;
+    }
+    if (10 - secsesif == 7)
+    {
+        printf("i like your spirit \n>");
+    }
+    elsif(10 - secsesif == 4)
+    {
+        printf("%d one after another you are the best \n>", 10 - secsesif);
+    }
+    elseif(10 - secsesif == 0)
+    {
+        printf("respect +  you are a nerd \n");
+    }
+
+    result += secsesif;
+    return result;
+}
+int userpassdeleter(char u[40])
+{
+    int Uline;
+    char temppass[40];
+    int line = 1;
+    Uline = checker(u, "users.txt");
+
+    FILE *fpp = fopen("passwords.txt", "r");
+    if (fpp == NULL)
+    {
+        printf("could not open file ");
+        return -1;
+    }
+
+    do
+    {
+
+        if (Uline == line)
+        {
+            delete ("paswwords.txt", temppass);
+        }
+        else
+        {
+            line++;
+        }
+    } while (fscanf(fpp, "%s", temppass) != 0);
+}
+int printer(const char filename[])
+{
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        printf("error opning file ");
+    }
+
+    while (feof != 0)
+    {
+        fprintf(file, "%s\n", stdout);
+    }
 }
