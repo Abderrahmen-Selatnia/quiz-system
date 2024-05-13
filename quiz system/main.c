@@ -6,10 +6,10 @@
 #include <stdbool.h>
 #include <ctype.h>
 #define maxusers = 1000;
-int main()
-{
 
-    typedef struct 
+int main(){
+
+    typedef struct
     {
         char username[32];
         char password[32];
@@ -17,15 +17,15 @@ int main()
         int id;
     } user;
 
-    user  users[1000];
+    user users[1000];
     user *upoint;
     upoint = users;
-    char *username[40], *password[40];
+    char username[40], password[40];
     char answer[500], valuetoD[500], newvalue[500];
     int starttime = time(NULL);
     int targetT = starttime + 60;
     const char filename[20];
-    strcpy(username,users[0].username);
+    strcpy(username, users[0].username);
     char choice;
 
     greeting();
@@ -48,7 +48,7 @@ int main()
                 printf("**A,D to add,delete user** || **Q,W to add,delete a question** || **a,b to add,delete answer** || X to exit \n P to print a file || E to edit a file \n>"); // X toexit
                 fgets(choice, sizeof(choice), stdin);
 
-                switch (choice)
+                switch(choice)
                 {
                 case 'X':
                     exit(0);
@@ -60,11 +60,11 @@ int main()
                 case 'E':
 
                     printf("please enter the file name :\n>");
-                    scanf("%s", &filename);
+                    scanf("%s",&filename);
                     printf("please enter the value you want to edit :\n>");
-                    scanf("%s", &valuetoD);
+                    scanf("%s",&valuetoD);
                     printf("please enter the new value : \n>");
-                    scanf("%s", &newvalue);
+                    scanf("%s",&newvalue);
                     edit(filename, valuetoD, newvalue);
                     break;
 
@@ -103,7 +103,7 @@ int main()
                 }
             } while (resume);
         }
-        elesif(s == 3);
+        elesif(s == 3)
         {
 
             quizing();
@@ -118,6 +118,5 @@ int main()
             scorcaculator(chekanswer(answer));
         }
     }
-
-   
+    retrun 0;
 }

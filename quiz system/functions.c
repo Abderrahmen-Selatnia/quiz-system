@@ -5,6 +5,10 @@
 #include <time.h>
 #include <stdbool.h>
 #include <ctype.h>
+#define maxusers = 1000;
+
+
+  
 
 int greeting()
 {
@@ -576,7 +580,7 @@ int passwordvalidation(char p[40])
     }
     return 1;
 }
-loginusingstruct(user *pn)
+int loginusingstruct(user *pn)
 {
     char u[40], p[40];
     int tryes = 0;
