@@ -21,7 +21,7 @@ int login()
     {
         printf("Now please type the password: \n>");
 
-        FILE *fpp = fopen("passwords.txt", "r");
+        FILE *fpp = fopen("password.txt", "r");
 
         if (fpp == NULL)
         {
@@ -52,7 +52,7 @@ int login()
             Uline = checker(u, "users.txt");
             printf("Now please type the password: \n>");
 
-            FILE *fpp = fopen("passwords.txt", "r");
+            FILE *fpp = fopen("password.txt", "r");
             if (fpp == NULL)
             {
                 printf("could not open file ");
@@ -173,7 +173,7 @@ int signup(int i)
         }
         fgets(p, sizeof(p), stdin);
         FILE *fpu = fopen("users.txt", "a");
-        FILE *fpp = fopen("passwords.txt", "a");
+        FILE *fpp = fopen("password.txt", "a");
 
         if (fpu == NULL || fpp == NULL)
         {
@@ -181,8 +181,38 @@ int signup(int i)
         }
         else
         {
+            fprintf(&username, "%s", u);
+            fprintf(&password, "%s", p);
             fprintf(fpu, "%s", u);
+            int j = 0;
+            while (1)
+            {
+                if (strlen(students[j].username) == 0)
+                {
+                    strcpy(students[j].username, &username);
+                    break;
+                }
+                else
+                {
+                    j++;
+                }
+            }
+
             fprintf(fpp, "%s", p);
+            j = 0;
+            while (1)
+            {
+                if (strlen(students[j].password) == 0)
+                {
+                    strcpy(students[j].password, &password);
+                    break;
+                }
+                else
+                {
+                    j++;
+                }
+            }
+
             fclose(fpu);
             fclose(fpp);
             if (i = 2)
@@ -381,7 +411,7 @@ int userpassdeleter(char u[40])
     int line = 1;
     Uline = checker(u, "users.txt");
 
-    FILE *fpp = fopen("passwords.txt", "r");
+    FILE *fpp = fopen("password.txt", "r");
     if (fpp == NULL)
     {
         printf("could not open file ");
@@ -402,6 +432,7 @@ int userpassdeleter(char u[40])
     } while (fscanf(fpp, "%s", temppass) != 0);
 }
 int printer(const char filename[])
+
 {
     FILE *file = fopen(filename, "r");
     if (file == NULL)
@@ -413,4 +444,108 @@ int printer(const char filename[])
     {
         fprintf(file, "%s\n", stdout);
     }
+}
+
+int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
+{
+    int i = 0;
+    bool found == false;
+    for (i = 0; i < maxusers; i++)
+    {
+        if (p[i]->atribut == scanedvalue)
+        {
+            found == true;
+        }
+    }
+    if (found)
+    {
+        return 1;
+    }
+    else
+    {
+        printf("value not found");
+        return 0;
+    }
+}
+
+int structwriter(s *p, int id, const char atribut[10], void value)
+{
+    int linenumber = 0;
+    char filename[20];
+    strcpy(filename, atribut);
+    strcat(filename, ".txt");
+    if (strcmp(atribut, "id") == 0)
+    {
+        write_int(s, id, "id", *(int *)value);
+    }
+    else if (strcmp(atribut, "scoor") == 0)
+    {
+        write_int(s, id, "scoor", *(int *)value);
+    }
+    else if (strcmp(atribut, "username") == 0)
+    {
+        write_string(s, id, "username", *(char **)value);
+        FILE *fp = fopen(filename, "a+");
+        if (fp == NULL)
+        {
+            printf("Error opening file\n");
+            return -1;
+        }
+        else
+        {
+
+            while (fscanf(fp, "%s", NULL) != EOF)
+            {
+                linenumber++;
+                if (linenumber == id)
+                {
+                    fprintf(fp, "%s", *(char **)value);
+                    fclose(fp);
+                    return 1;
+                }
+            }
+        }
+    }
+    else if (strcmp(atribut, "password") == 0)
+    {
+
+        write_string(s, id, "password", *(char **)value);
+        FILE *fp = fopen(filename, "a+");
+        if (fp == NULL)
+        {
+            printf("Error opening file\n");
+            return -1;
+        }
+        else
+        {
+
+            while (fscanf(fp, "%s", NULL) != EOF)
+            {
+                linenumber++;
+                if (linenumber == id)
+                {
+                    fprintf(fp, "%s", *(char **)value);
+                    fclose(fp);
+                    return 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        printf("Invalid attribute\n");
+    }
+    return 0;
+}
+
+int write_int(s *p, int id, const char atribut[10], int value)
+{
+
+    p[id]->atribut = value;
+}
+
+int write_string(s *p, int id, const char atribut[10], char value[50])
+{
+
+    p[id]->atribut = value;
 }
