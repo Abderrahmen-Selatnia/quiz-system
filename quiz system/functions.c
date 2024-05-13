@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 int greeting()
 {
@@ -107,7 +108,7 @@ int checker(char u[30], const char filename[15])
     fclose(file);
 }
 
-int linecheck(char tochek[50], int lineN, const char filename[])
+int spisifiedlinecheck(char tochek[50], int lineN, const char filename[])
 {
 
     int checkstoper = 1, linenumber = 1;
@@ -146,85 +147,51 @@ int linecheck(char tochek[50], int lineN, const char filename[])
     }
 }
 
-int signup(int i)
+int signup(user *pp)
 {
-
-    char u[32], p[32];
-    if (i = 2)
+    char u[40], p[40];
+    printf("please enter your username");
+    scanf("%s", &u);
+    do
     {
-        printf("Welcome to singup please start with typing your username: \n>");
+        printf("please enter a valid username \n>");
+        scanf("%s", &u);
+
+    } while (checker(u) != 0);
+    FILE *fileu = fopen("user.txt", "a+");
+    if (file == NULL)
+    {
+        printf("error opening file");
+        return -1;
     }
     else
     {
-        printf("please enter the username: \n>");
+        fprintf(fileu, "%s\n", u);
+        fclose(fileu);
+        return 1;
     }
-
-    fgets(u, sizeof(u, stdin));
-
-    if (checker(u, "users.txt") != 0)
+    structwriter(pp, howmanyline(users), "user", u);
+    printf("please enter your password");
+    scanf("%s", &p);
+    do
     {
-        if (i = 2)
-        {
-            printf("now please type your pasword: \n>");
-        }
-        else
-        {
-            printf("please enter the acount password: \n>");
-        }
-        fgets(p, sizeof(p), stdin);
-        FILE *fpu = fopen("users.txt", "a");
-        FILE *fpp = fopen("password.txt", "a");
-
-        if (fpu == NULL || fpp == NULL)
-        {
-            printf("eroor singing up");
-        }
-        else
-        {
-            fprintf(&username, "%s", u);
-            fprintf(&password, "%s", p);
-            fprintf(fpu, "%s", u);
-            int j = 0;
-            while (1)
-            {
-                if (strlen(students[j].username) == 0)
-                {
-                    strcpy(students[j].username, &username);
-                    break;
-                }
-                else
-                {
-                    j++;
-                }
-            }
-
-            fprintf(fpp, "%s", p);
-            j = 0;
-            while (1)
-            {
-                if (strlen(students[j].password) == 0)
-                {
-                    strcpy(students[j].password, &password);
-                    break;
-                }
-                else
-                {
-                    j++;
-                }
-            }
-
-            fclose(fpu);
-            fclose(fpp);
-            if (i = 2)
-            {
-                printf("Welcome your singedup: \n>");
-            }
-            else
-            {
-                printf("the user added secsefully: \n>");
-            }
-        }
+        printf("please try again and try with valid password\n>");
+        scanf("%s", &p);
+    } while (!passwordvalidation(p));
+    FILE *file = fopen("password.txt", "a+");
+    if (file == NULL)
+    {
+        printf("error opening file");
+        return -1;
     }
+    else
+    {
+        fprintf(file, "%s\n", p);
+        fclose(file);
+        return 1;
+    }
+
+    structwriter(pp, howmanyline(passwords), "password", p);
 }
 
 int delete(const char filename[15], char valuetoD[])
@@ -459,7 +426,7 @@ int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
     }
     if (found)
     {
-        return 1;
+        return i;
     }
     else
     {
@@ -468,7 +435,7 @@ int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
     }
 }
 
-int structwriter(s *p, int id, const char atribut[10], void value)
+int structwriter(user *p, int id, const char atribut[10], void value)
 {
     int linenumber = 0;
     char filename[20];
@@ -476,15 +443,15 @@ int structwriter(s *p, int id, const char atribut[10], void value)
     strcat(filename, ".txt");
     if (strcmp(atribut, "id") == 0)
     {
-        write_int(s, id, "id", *(int *)value);
+        write_int(user, id, "id", *(int *)value);
     }
     else if (strcmp(atribut, "scoor") == 0)
     {
-        write_int(s, id, "scoor", *(int *)value);
+        write_int(user, id, "scoor", *(int *)value);
     }
     else if (strcmp(atribut, "username") == 0)
     {
-        write_string(s, id, "username", *(char **)value);
+        write_string(user, id, "username", *(char **)value);
         FILE *fp = fopen(filename, "a+");
         if (fp == NULL)
         {
@@ -509,7 +476,7 @@ int structwriter(s *p, int id, const char atribut[10], void value)
     else if (strcmp(atribut, "password") == 0)
     {
 
-        write_string(s, id, "password", *(char **)value);
+        write_string(user, id, "password", *(char **)value);
         FILE *fp = fopen(filename, "a+");
         if (fp == NULL)
         {
@@ -538,14 +505,133 @@ int structwriter(s *p, int id, const char atribut[10], void value)
     return 0;
 }
 
-int write_int(s *p, int id, const char atribut[10], int value)
+int write_int(user *p, int id, const char atribut[10], int value)
 {
 
     p[id]->atribut = value;
 }
 
-int write_string(s *p, int id, const char atribut[10], char value[50])
+int write_string(user *p, int id, const char atribut[10], char value[50])
 {
 
     p[id]->atribut = value;
+}
+
+int passwordvalidation(char p[40])
+{
+
+    bool hasnumber = false;
+    bool hasspecialcharacter = false;
+    bool haslowercharcter = false;
+    bool redcuiredlengh = false;
+    bool hasasymbole = false;
+    if (strlen(p) < 8)
+    {
+        printf("password must be at least 8 characters long\n");
+        return -1;
+    }
+
+    for (int i = 0; i < strlen(p); i++)
+    {
+
+        if (isupper(p[i]))
+        {
+            hasspecialcharacter = true;
+        }
+        if (islower(p[i]))
+        {
+            haslowercharcter = true;
+        }
+        if (isdigit(p[i]))
+        {
+            hasnumber = true;
+        }
+        if (ispunct(p[i]))
+        {
+            hasasymbole = true;
+        }
+    }
+    if (!hasasymbole)
+    {
+        printf("your password must have a symbole");
+        return 0;
+    }
+    if (!haslowercharcter)
+    {
+        printf("your password must have a lowercase char");
+
+        return 0;
+    }
+    if (!hasspecialcharacter)
+    {
+        printf("your password must have a capital letter");
+
+        return 0;
+    }
+    if (!hasnumber)
+    {
+        printf("your password must have a number");
+
+        return 0;
+    }
+    return 1;
+}
+loginusingstruct(user *pn)
+{
+    char u[40], p[40];
+    int tryes = 0;
+    printf("please enter your user name \n>");
+    scanf("%s", u);
+    do
+    {
+        printf("please enter valide username \n>");
+        scanf("%s", u);
+        tryes++;
+        if (tryes == 5)
+        {
+            exit();
+        }
+        else
+        {
+            printf("you have %d of tryes before the program exit ", 5 - tryes);
+        }
+
+    } while (checker(u) != 0 && checker(u) != -1);
+    if (strcmp(u, "admin") == 0)
+    {
+        printf("welcom back admin please enter your password to authenticate");
+        scanf("%s", p);
+        do
+        {
+            scanf("%s", p);
+            if (pn[0]->password == p[0] && pn[0]->username == u)
+            {
+                return 1;
+            }
+            else
+            {
+                printf("authentication problem retry typing password remain tryies %d", tryes);
+                return 0;
+            }
+            tryes++;
+        } while (tryes < 4);
+    }
+
+    int tryes = 0, id = structvalexistance(pn, "users.txt", u);
+    printf("now please enter your password");
+    scanf("%s", p);
+    do
+    {
+        scanf("%s", p);
+        if (pn[id]->password == p[id] && pn[id]->username == u)
+        {
+            return 3;
+        }
+        else
+        {
+            printf("authentication problem retry typing password remain tryies %d", tryes);
+            return 2;
+        }
+        tryes++;
+    } while (tryes < 4);
 }

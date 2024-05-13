@@ -4,26 +4,30 @@
 #include <openssl/sha.h>
 #include "functions.h"
 #include <stdbool.h>
+#include <ctype.h>
 #define maxusers = 1000;
 int main()
 {
 
     typedef struct 
     {
-        char usernames[32];
-        char passwords[32];
+        char username[32];
+        char password[32];
         int scoor;
         int id;
     } user;
 
-    stedent stedents[100];
-    char *username[40],*password[40];
+    user  users[1000];
+    user *upoint;
+    upoint = users;
+    char *username[40], *password[40];
     char answer[500], valuetoD[500], newvalue[500];
     int starttime = time(NULL);
     int targetT = starttime + 60;
     const char filename[20];
-    strcpy(stedents[1].username,username);
+    strcpy(username,users[0].username);
     char choice;
+
     greeting();
     fgets(choice, sizeof(choice), stdin);
     if (choice == 'n')
@@ -32,7 +36,7 @@ int main()
     }
     else if (choice == '\n')
     {
-        int s = login();
+        int s = loginusingstruct(upoint);
         if (1 == s)
         {
             bool resume = true;
@@ -47,7 +51,7 @@ int main()
                 switch (choice)
                 {
                 case 'X':
-                    exit();
+                    exit(0);
 
                 case 'A':
                     singup(1);
@@ -99,7 +103,7 @@ int main()
                 }
             } while (resume);
         }
-        elesif(s == 2)
+        elesif(s == 3);
         {
 
             quizing();
@@ -111,7 +115,7 @@ int main()
                 fflush(stdout);
                 sleep(1);
             }
-            scorcaculator(chekanswer(answer););
+            scorcaculator(chekanswer(answer));
         }
     }
 
