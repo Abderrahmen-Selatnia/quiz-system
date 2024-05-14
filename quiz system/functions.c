@@ -1,3 +1,4 @@
+#include"functions.h"
 int greeting()
 {
 
@@ -40,9 +41,9 @@ int login()
     }
     else
     {
-        if (checker(u, "user.txt") != 0)
+        if (checker(u, "users.txt") != 0)
         {
-            Uline = checker(u, "user.txt");
+            Uline = checker(u, "users.txt");
             printf("Now please type the password: \n>");
 
             FILE *fpp = fopen("password.txt", "r");
@@ -139,7 +140,7 @@ int spisifiedlinecheck(char tochek[50], int lineN, const char filename[])
     }
 }
 
-int signup(upoint)
+int signup(user *pp)
 {
     char u[40], p[40];
     printf("please enter your username");
@@ -162,7 +163,7 @@ int signup(upoint)
         fclose(fileu);
         return 1;
     }
-    structwriter(pp, howmanyline(user), "user", u);
+    structwriter(pp, howmanyline(users), "user", u);
     printf("please enter your password");
     scanf("%s", &p);
     do
@@ -368,7 +369,7 @@ int userpassdeleter(char u[40])
     int Uline;
     char temppass[40];
     int line = 1;
-    Uline = checker(u, "user.txt");
+    Uline = checker(u, "users.txt");
 
     FILE *fpp = fopen("password.txt", "r");
     if (fpp == NULL)
@@ -405,11 +406,11 @@ int printer(const char filename[])
     }
 }
 
-int structvalexistance(upoint, const char atribut[10], char scanedvalue[40])
+int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
 {
     int i = 0;
     bool found == false;
-    for (i = 0; i < maxuser; i++)
+    for (i = 0; i < maxusers; i++)
     {
         if (p[i]->atribut == scanedvalue)
         {
@@ -427,86 +428,98 @@ int structvalexistance(upoint, const char atribut[10], char scanedvalue[40])
     }
 }
 
-int structwriter(upoint, int id, const char atribut[10], void value)
+
+    int structwriter(user *p, int id, const char atribut[10], union Value)
+    {
+        
+        if (strcmp(atribut, "id") == 0 || strcmp(atribut, "score") == 0)
+        {
+            return write_int_to_struct(p, id, atribut, value.int_value);
+        }
+        else if (strcmp(atribut, "username") == 0 || strcmp(atribut, "password") == 0)
+        {
+            return write_string_to_struct(p, id, atribut, value.string_value);
+        }
+        else
+        {
+            printf("Invalid attribute\n");
+            return -1;
+        }
+    }
+
+    
+
+
+int write_int_to_struct(user *p, int id, const char atribut[10], int value)
 {
-    int linenumber = 0;
-    char filename[20];
-    strcpy(filename, atribut);
-    strcat(filename, ".txt");
     if (strcmp(atribut, "id") == 0)
     {
-        write_int(user, id, "id", *(int *)value);
+        p[id].id = value;
     }
-    else if (strcmp(atribut, "scoor") == 0)
+    else if (strcmp(atribut, "score") == 0)
     {
-        write_int(user, id, "scoor", *(int *)value);
-    }
-    else if (strcmp(atribut, "username") == 0)
-    {
-        write_string(user, id, "username", *(char **)value);
-        FILE *fp = fopen(filename, "a+");
-        if (fp == NULL)
-        {
-            printf("Error opening file\n");
-            return -1;
-        }
-        else
-        {
-
-            while (fscanf(fp, "%s", NULL) != EOF)
-            {
-                linenumber++;
-                if (linenumber == id)
-                {
-                    fprintf(fp, "%s", *(char **)value);
-                    fclose(fp);
-                    return 1;
-                }
-            }
-        }
-    }
-    else if (strcmp(atribut, "password") == 0)
-    {
-
-        write_string(user, id, "password", *(char **)value);
-        FILE *fp = fopen(filename, "a+");
-        if (fp == NULL)
-        {
-            printf("Error opening file\n");
-            return -1;
-        }
-        else
-        {
-
-            while (fscanf(fp, "%s", NULL) != EOF)
-            {
-                linenumber++;
-                if (linenumber == id)
-                {
-                    fprintf(fp, "%s", *(char **)value);
-                    fclose(fp);
-                    return 1;
-                }
-            }
-        }
+        p[id].score = value;
     }
     else
     {
-        printf("Invalid attribute\n");
+        printf("Invalid attribute for write_int_to_struct\n");
+        return -1;
     }
-    return 0;
+
+   
+    char filename[50];                      
+    strncpy(filename, atribut);
+              
+    strcat(filename, ".txt");
+
+    FILE *fp = fopen(filename, "a+");
+    if (fp == NULL)
+    {
+        printf("Error opening file\n");
+        return -1;
+    }
+
+    fprintf(fp, "%d\n", value); 
+
+    fclose(fp);
+    return 1;
 }
 
-int write_int(upoint, int id, const char atribut[10], int value)
+
+int write_string_to_struct(user *p, int id, const char atribut[10], char value[50])
 {
+    if (strcmp(atribut, "username") == 0)
+    {
+        strcpy(p[id].username, value);
+    }
+    else if (strcmp(atribut, "password") == 0)
+    {
+        
+        strcpy(p[id].password, value); 
+    }
+    else
+    {
+        printf("Invalid attribute for write_string_to_struct\n");
+        return -1;
+    }
 
-    p[id]->atribut = value;
-}
+    
+    char filename[50];
+    strncpy(filename, atribut);
+    
+    strcat(filename,".txt");
 
-int write_string(upoint, int id, const char atribut[10], char value[50])
-{
+    FILE *fp = fopen(filename, "a+");
+    if (fp == NULL)
+    {
+        printf("Error opening file\n");
+        return -1;
+    }
 
-    p[id]->atribut = value;
+    fprintf(fp, "%s\n", value);
+
+    fclose(fp);
+    return 1;
 }
 
 int passwordvalidation(char p[40])
@@ -568,7 +581,7 @@ int passwordvalidation(char p[40])
     }
     return 1;
 }
-int loginusingstruct(upoint)
+int loginusingstruct(user *pn)
 {
     char u[40], p[40];
     int tryes = 0;
@@ -609,7 +622,7 @@ int loginusingstruct(upoint)
         } while (tryes < 4);
     }
 
-    int tryes = 0, id = structvalexistance(pn, "user.txt", u);
+    int tryes = 0, id = structvalexistance(pn, "users.txt", u);
     printf("now please enter your password");
     scanf("%s", p);
     do
@@ -627,3 +640,6 @@ int loginusingstruct(upoint)
         tryes++;
     } while (tryes < 4);
 }
+
+
+
