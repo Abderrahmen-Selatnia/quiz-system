@@ -1,15 +1,3 @@
-#include <stdio.h>
-#include <stdio.h>
-#include <strings.h>
-#include <string.h>
-#include <time.h>
-#include <stdbool.h>
-#include <ctype.h>
-#define maxusers = 1000;
-
-
-  
-
 int greeting()
 {
 
@@ -52,9 +40,9 @@ int login()
     }
     else
     {
-        if (checker(u, "users.txt") != 0)
+        if (checker(u, "user.txt") != 0)
         {
-            Uline = checker(u, "users.txt");
+            Uline = checker(u, "user.txt");
             printf("Now please type the password: \n>");
 
             FILE *fpp = fopen("password.txt", "r");
@@ -151,7 +139,7 @@ int spisifiedlinecheck(char tochek[50], int lineN, const char filename[])
     }
 }
 
-int signup(user *pp)
+int signup(upoint)
 {
     char u[40], p[40];
     printf("please enter your username");
@@ -174,7 +162,7 @@ int signup(user *pp)
         fclose(fileu);
         return 1;
     }
-    structwriter(pp, howmanyline(users), "user", u);
+    structwriter(pp, howmanyline(user), "user", u);
     printf("please enter your password");
     scanf("%s", &p);
     do
@@ -380,7 +368,7 @@ int userpassdeleter(char u[40])
     int Uline;
     char temppass[40];
     int line = 1;
-    Uline = checker(u, "users.txt");
+    Uline = checker(u, "user.txt");
 
     FILE *fpp = fopen("password.txt", "r");
     if (fpp == NULL)
@@ -417,11 +405,11 @@ int printer(const char filename[])
     }
 }
 
-int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
+int structvalexistance(upoint, const char atribut[10], char scanedvalue[40])
 {
     int i = 0;
     bool found == false;
-    for (i = 0; i < maxusers; i++)
+    for (i = 0; i < maxuser; i++)
     {
         if (p[i]->atribut == scanedvalue)
         {
@@ -439,7 +427,7 @@ int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
     }
 }
 
-int structwriter(user *p, int id, const char atribut[10], void value)
+int structwriter(upoint, int id, const char atribut[10], void value)
 {
     int linenumber = 0;
     char filename[20];
@@ -509,13 +497,13 @@ int structwriter(user *p, int id, const char atribut[10], void value)
     return 0;
 }
 
-int write_int(user *p, int id, const char atribut[10], int value)
+int write_int(upoint, int id, const char atribut[10], int value)
 {
 
     p[id]->atribut = value;
 }
 
-int write_string(user *p, int id, const char atribut[10], char value[50])
+int write_string(upoint, int id, const char atribut[10], char value[50])
 {
 
     p[id]->atribut = value;
@@ -580,7 +568,7 @@ int passwordvalidation(char p[40])
     }
     return 1;
 }
-int loginusingstruct(user *pn)
+int loginusingstruct(upoint)
 {
     char u[40], p[40];
     int tryes = 0;
@@ -621,7 +609,7 @@ int loginusingstruct(user *pn)
         } while (tryes < 4);
     }
 
-    int tryes = 0, id = structvalexistance(pn, "users.txt", u);
+    int tryes = 0, id = structvalexistance(pn, "user.txt", u);
     printf("now please enter your password");
     scanf("%s", p);
     do

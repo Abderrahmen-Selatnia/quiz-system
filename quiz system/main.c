@@ -5,9 +5,12 @@
 #include "functions.h"
 #include <stdbool.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include<string.h>
 #define maxusers = 1000;
 
-int main(){
+void main()
+{
 
     typedef struct
     {
@@ -16,7 +19,9 @@ int main(){
         int scoor;
         int id;
     } user;
-
+    int*result = (int*)malloc(sizeof(int));
+    int *secsesif = (int *)malloc(sizeof(int));
+    int questionline;
     user users[1000];
     user *upoint;
     upoint = users;
@@ -25,14 +30,14 @@ int main(){
     int starttime = time(NULL);
     int targetT = starttime + 60;
     const char filename[20];
-    strcpy(username, users[0].username);
+   
     char choice;
 
     greeting();
-    fgets(choice, sizeof(choice), stdin);
+    scanf("%c",choice);
     if (choice == 'n')
     {
-        singup();
+        singup(upoint);
     }
     else if (choice == '\n')
     {
@@ -43,12 +48,12 @@ int main(){
 
             do
             {
-                choice == NULL;
+                choice = NULL;
 
-                printf("**A,D to add,delete user** || **Q,W to add,delete a question** || **a,b to add,delete answer** || X to exit \n P to print a file || E to edit a file \n>"); // X toexit
+                printf(" **A,D to add,delete user** || **Q,W to add,delete a question** || **a,b to add,delete answer** || X to exit \n P to print a file || E to edit a file \n  > "); 
                 fgets(choice, sizeof(choice), stdin);
 
-                switch(choice)
+                switch (choice)
                 {
                 case 'X':
                     exit(0);
@@ -60,11 +65,11 @@ int main(){
                 case 'E':
 
                     printf("please enter the file name :\n>");
-                    scanf("%s",&filename);
+                    scanf("%s",filename);
                     printf("please enter the value you want to edit :\n>");
-                    scanf("%s",&valuetoD);
+                    scanf("%s", &valuetoD);
                     printf("please enter the new value : \n>");
-                    scanf("%s",&newvalue);
+                    scanf("%s", &newvalue);
                     edit(filename, valuetoD, newvalue);
                     break;
 
@@ -103,10 +108,9 @@ int main(){
                 }
             } while (resume);
         }
-        elesif(s == 3)
+        else if (s == 3)
         {
-
-            quizing();
+            questionline =quizing(username);
             scanf("%s", answer);
             while (targetT > starttime)
             {
@@ -115,8 +119,7 @@ int main(){
                 fflush(stdout);
                 sleep(1);
             }
-            scorcaculator(chekanswer(answer));
+            scorcaculator(chekanswer(answer,questionline), result,secsesif);
         }
     }
-    retrun 0;
 }
