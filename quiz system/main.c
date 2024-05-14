@@ -1,19 +1,19 @@
+#include "functions.h"
 #include <stdio.h>
 #include <strings.h>
 #include <time.h>
-#include <openssl/sha.h>
-#include "functions.h"
 #include <stdbool.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include<string.h>
-#include<unistd.h>
+#include <string.h>
+#include <unistd.h>
 #define MAXUSERS 1000
 
 void main()
 {
 
-    typedef struct user{
+    typedef struct user
+    {
         char username[32];
         char password[32];
         int scoor;
@@ -24,14 +24,14 @@ void main()
     {
         int int_value;
         char string_value[50];
-    }value;
+    } value;
 
-    int*result = (int*)malloc(sizeof(int));
+    int *result = (int *)malloc(sizeof(int));
     int *secsesif = (int *)malloc(sizeof(int));
-    int questionline =0 ;
+    int questionline = 0;
     user users[MAXUSERS];
     user *upoint;
-    upoint=users;
+    upoint = users;
     char username[40], password[40];
     char answer[500], valuetoD[500], newvalue[500];
     int starttime = time(NULL);
@@ -42,7 +42,7 @@ void main()
     char choice;
 
     greeting();
-    scanf(" %c",&choice);
+    scanf(" %c", &choice);
     if (choice == 'n')
     {
         signup(upoint);
@@ -56,7 +56,7 @@ void main()
 
             do
             {
-                choice ='\0';
+                choice = '\0';
 
                 printf(" **A,D to add,delete user** || **Q,W to add,delete a question** || **a,b to add,delete answer** || X to exit \n P to print a file || E to edit a file \n  > ");
                 scanf(" %c", &choice);
@@ -76,9 +76,9 @@ void main()
                     scanf(" %s", tempfilename);
                     strcpy((char *)(filename), tempfilename);
                     printf("please enter the value you want to edit :\n>");
-                    scanf(" %s",valuetoD);
+                    scanf(" %s", valuetoD);
                     printf("please enter the new value : \n>");
-                    scanf(" %s",newvalue);
+                    scanf(" %s", newvalue);
                     edit(filename, valuetoD, newvalue);
                     break;
 
@@ -108,8 +108,8 @@ void main()
 
                 case 'P':
                     printf("please enter the file name you want to print");
-                    scanf(" %s",tempfilename);
-                    strcpy((char *)(filename),tempfilename);
+                    scanf(" %s", tempfilename);
+                    strcpy((char *)(filename), tempfilename);
 
                     printer(filename);
                     break;
@@ -121,7 +121,7 @@ void main()
         }
         else if (s == 3)
         {
-            questionline =quizing(username);
+            questionline = quizing(username);
             scanf(" %s", answer);
             while (targetT > starttime)
             {
@@ -130,12 +130,9 @@ void main()
                 fflush(stdout);
                 sleep(1);
             }
-            scorcaculator(chekanswer(answer,questionline), result,secsesif);
+            scorcaculator(chekanswer(answer, questionline), result, secsesif);
         }
     }
     free(result);
     free(secsesif);
 }
-
-
-

@@ -642,4 +642,3 @@ int loginusingstruct(user *pn)
 }
 
 
-
