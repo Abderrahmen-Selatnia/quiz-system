@@ -7,20 +7,14 @@ typedef struct user
     int score;
     int id;
 }user ;
-typedef union Value
-{
-    int int_value;
-    char string_value[50];
-}value;
+
 int greeting();
 
-int login();
 
-int checker(char u[30], const char filename[15]);
 
 int spisifiedlinecheck(char tochek[50], int lineN, const char filename[]);
 
-int signup(user *pp, char *username, char *password);
+
 
 int delete(const char filename[15], char valuetoD[]);
 
@@ -36,15 +30,13 @@ int scorcaculator(int answerscor, int *result, int *secsesif);
 int userpassdeleter(char u[40]);
 
 int printer(const char filename[]);
-
-int structvalexistance(user *p, const char atribut[10], char scanedvalue[40]);
-
-int structwriter(user *p, int id, const char atribut[10], union Value);
-
-int write_int(user *p, int id, const char atribut[10], int value);
-
-int write_string(user *p, int id, const char atribut[10], char value[50]);
-
 int passwordvalidation(char p[40]);
 int loginusingstruct(user *pn, char *username, char *password);
+void edituserS(user *p, int id) void deleteuserS(user *p, int id)
+int usernamevalidation(char *username);
+int findidforenw(user *p);
+int addinstruct(user *p, int id, char *password[], char *username[]);
+int loginusingstruct(user *p, int id);
+int userid(char username[], int *id);
+
 #endif
