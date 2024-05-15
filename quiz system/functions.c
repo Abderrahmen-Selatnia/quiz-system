@@ -1,4 +1,14 @@
 #include"functions.h"
+#include <stdio.h>
+#include <strings.h>
+#include <time.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+
 int greeting()
 {
 
@@ -408,115 +418,6 @@ int printer(const char filename[])
     }
 }
 
-int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
-{
-    int i = 0;
-    bool found = 0;
-    for (i = 0; i < MAXUSERS; i++)
-    {
-        if (p[i]->atribut == scanedvalue)
-        {
-            found = 1;
-        }
-    }
-    if (found)
-    {
-        return i;
-    }
-    else
-    {
-        printf("value not found");
-        return 0;
-    }
-}
-
-int structwriter(user *p, int id, const char atribut[10], union value)
-{
-
-    if (strcmp(atribut, "id") == 0 || strcmp(atribut, "score") == 0)
-    {
-        return write_int_to_struct(p, id, atribut, value.int_value);
-    }
-    else if (strcmp(atribut, "username") == 0 || strcmp(atribut, "password") == 0)
-    {
-        return write_string_to_struct(p, id, atribut, value.string_value);
-    }
-    else
-    {
-        printf("Invalid attribute\n");
-        return -1;
-    }
-}
-
-int write_int_to_struct(user *p, int id, const char atribut[10], int value)
-{
-    if (strcmp(atribut, "id") == 0)
-    {
-        p[id].id = value;
-    }
-    else if (strcmp(atribut, "score") == 0)
-    {
-        p[id].score = value;
-    }
-    else
-    {
-        printf("Invalid attribute for write_int_to_struct\n");
-        return -1;
-    }
-
-    char filename[50];
-    strncpy((char *)filename, (char *)atribut);
-
-    strcat(filename, ".txt");
-
-    FILE *fp = fopen(filename, "a+");
-    if (fp == NULL)
-    {
-        printf("Error opening file\n");
-        return -1;
-    }
-
-    fprintf(fp, "%d\n", value);
-
-    fclose(fp);
-    return 1;
-}
-
-int write_string_to_struct(user *p, int id, const char atribut[10], char value[50])
-{
-    if (strcmp(atribut, "username") == 0)
-    {
-        strcpy(p[id].username, value);
-    }
-    else if (strcmp(atribut, "password") == 0)
-    {
-
-        strcpy(p[id].password, value);
-    }
-    else
-    {
-        printf("Invalid attribute for write_string_to_struct\n");
-        return -1;
-    }
-
-    const char filename[50];
-    strncpy((char *)filename, (char *)atribut);
-
-    strcat(filename, ".txt");
-
-    FILE *fp = fopen(filename, "a+");
-    if (fp == NULL)
-    {
-        printf("Error opening file\n");
-        return -1;
-    }
-
-    fprintf(fp, "%s\n", value);
-
-    fclose(fp);
-    return 1;
-}
-
 int passwordvalidation(char p[40])
 {
 
@@ -576,64 +477,116 @@ int passwordvalidation(char p[40])
     }
     return 1;
 }
-int loginusingstruct(user *pn,char *username,char *password)
+int loginusingstruct(User *p, int id)
 {
-    char u[40], p[40];
-    int tryes = 0;
-    printf("please enter your user name \n>");
-    scanf("%s", u);
+    int triesLeft = 4;
+    char password[20];
+
     do
     {
-        printf("please enter valide username \n>");
-        scanf("%s", u);
-        tryes++;
-        if (tryes == 5)
+        printf("Enter password (you have %d tries left): ", triesLeft);
+        scanf("%s", password);
+
+        if (strcmp(p[id]->password, password) == 0)
         {
-            exit();
+            printf("Login successful!\n");
+            return 1;
         }
         else
         {
-            printf("you have %d of tryes before the program exit ", 5 - tryes);
+            printf("Incorrect password. ");
+            triesLeft--;
         }
 
-    } while (checker(u) != 0 && checker(u) != -1);
-    strcpy(*username,u);
-    if (strcmp(u, "admin") == 0)
-    {
-        printf("welcom back admin please enter your password to authenticate");
-        scanf("%s", p);
-        do
+        if (triesLeft == 0)
         {
-            scanf("%s", p);
-            if (pn[0]->password == p[0] && pn[0]->username == u)
-            {
-                strcpy(*password, p);
-                return 1;
-            }
-            else
-            {
-                printf("authentication problem retry typing password remain tryies %d", tryes);
-                return 0;
-            }
-            tryes++;
-        } while (tryes < 4);
-    }
+            printf("You have no tries left. Exiting...\n");
+            return 0;
+        }
 
-    int tryes = 0, id = structvalexistance(pn, "users.txt", u);
-    printf("now please enter your password");
-    scanf("%s", p);
-    do
-    {
-        scanf("%s", p);
-        if (pn[id]->password == p[id] && pn[id]->username == u)
-        {
-            return 3;
-        }
-        else
-        {
-            printf("authentication problem retry typing password remain tryies %d", tryes);
-            return 2;
-        }
-        tryes++;
-    } while (tryes < 4);
+    } while (triesLeft > 0);
+
+    return 0;
 }
+
+int addinstruct(user *p,int id,char *password[],char *username[]){
+        printf("enter username");
+        scanf("%s",*username);
+        if (!usernamevalidation(*username))
+        {
+            do
+            {
+                printf("please enter a valid username");
+                scanf("%s", *username);
+
+            } while (!usernamevalidation(*username));
+        }
+        else
+        {
+
+            p[id]->username = *username;
+        }
+        
+        
+        printf("enter password");
+        scanf("%s",*password);
+
+        if (!passwordvalidation(*password))
+        {
+            do
+            {
+                printf("please enter a valid password");
+                scanf("%s",*password);
+
+            } while (!passwordvalidation(*password));
+            
+
+        }else
+        {
+            
+            p[id]->password = *password;
+        }
+        
+        
+        
+        
+        
+        
+        
+        return 1;
+}
+
+
+
+int findidforenw(user *p){
+
+for (int i = 0; i < MAXUSERS; i++)
+{
+    if (p[i]->id=0)
+    {
+        return i;
+    }
+}
+}
+
+usernamevalidation(char *username){
+for (int i = 0; i < MAXUSERS; i++)
+{
+    if (strcasecmp(p[i]->username,*username)==0)
+    {
+        return 1;
+        break;
+    }
+}
+if (i<MAXUSERS-1)
+{
+    return 0;
+}
+
+
+
+
+}
+
+
+

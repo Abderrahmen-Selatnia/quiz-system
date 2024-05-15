@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../../quiz system"
+		},
+		{
+			"name": "quiz-system",
+			"path": "../../quiz system/quiz-system"
+		},
+		{
+			"name": "quiz-system",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}

@@ -18,8 +18,8 @@ void main()
         char username[32];
         char password[32];
         int scoor;
-        int id;
-    }user1;
+        int id=0;
+    };
 
     typedef union Value
     {
@@ -34,6 +34,9 @@ void main()
     user *upoint;
     upoint = users;
     char username[40], password[40];
+    char *u, *p;
+    u = username;
+    p = password;
     char answer[500], valuetoD[500], newvalue[500];
     int starttime = time(NULL);
     int targetT = starttime + 60;
@@ -46,11 +49,11 @@ void main()
     scanf(" %c", &choice);
     if (choice == 'n')
     {
-        signup(upoint,&username,&password);
+        signup(upoint,u,p);
     }
     else if (choice == '\n')
     {
-        int s = loginusingstruct(upoint,&username,&password);
+        int s = loginusingstruct(upoint,u,p);
         if (1 == s)
         {
             bool resume = 1;
@@ -68,7 +71,7 @@ void main()
                     exit(0);
 
                 case 'A':
-                    signup(upoint, &username, &password);
+                    signup(upoint,u,p);
                     break;
 
                 case 'E':
