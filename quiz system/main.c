@@ -1,4 +1,3 @@
-#include "functions.h"
 #include <stdio.h>
 #include <strings.h>
 #include <time.h>
@@ -7,7 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "functions.h"
 #define MAXUSERS 1000
+
 
 void main()
 {
@@ -18,7 +19,7 @@ void main()
         char password[32];
         int scoor;
         int id;
-    };
+    }user1;
 
     typedef union Value
     {

@@ -1,3 +1,5 @@
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
 typedef struct user
 {
     char username[32];
@@ -45,3 +47,4 @@ int write_string(user *p, int id, const char atribut[10], char value[50]);
 
 int passwordvalidation(char p[40]);
 int loginusingstruct(user *pn);
+#endif

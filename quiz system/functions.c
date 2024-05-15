@@ -22,14 +22,14 @@ int login()
             printf("could not open file ");
             return -1;
         }
-        fscanf(fpp, "%s", &temppass);
+        fscanf(fpp, "%s", temppass);
         do
         {
             fgets(p, sizeof(p), stdin);
             if (strcasecmp(p, temppass) == 0)
             {
                 printf("welcome admin\n");
-                fgets(&username, sizeof(username), u);
+
                 return 1;
             }
             else
@@ -59,7 +59,7 @@ int login()
                 if (linecheck(p, Uline, "paswords.txt"))
                 {
                     printf("welcome");
-                    fgets(&username, sizeof(username), u);
+
                     return 2;
                 }
                 else
@@ -84,7 +84,7 @@ int checker(char u[30], const char filename[15])
         printf("could not check the username properly");
         return -1;
     }
-    while (fscanf(file, "%s", &tempcmpusername) != 0)
+    while (fscanf(file, "%s", tempcmpusername) != 0)
     {
 
         if (strcmp(u, tempcmpusername) == 0)
@@ -144,15 +144,15 @@ int signup(user *pp)
 {
     char u[40], p[40];
     printf("please enter your username");
-    scanf("%s", &u);
+    scanf("%s", u);
     do
     {
         printf("please enter a valid username \n>");
-        scanf("%s", &u);
+        scanf("%s", u);
 
-    } while (checker(u) != 0);
+    } while (checker(u, "user.txt") != 0);
     FILE *fileu = fopen("user.txt", "a+");
-    if (file == NULL)
+    if (fileu == NULL)
     {
         printf("error opening file");
         return -1;
@@ -163,13 +163,13 @@ int signup(user *pp)
         fclose(fileu);
         return 1;
     }
-    structwriter(pp, howmanyline(users), "user", u);
+    structwriter(pp, structvalexistance(pp, "users.txt", u));
     printf("please enter your password");
-    scanf("%s", &p);
+    scanf("%s", p);
     do
     {
         printf("please try again and try with valid password\n>");
-        scanf("%s", &p);
+        scanf("%s", p);
     } while (!passwordvalidation(p));
     FILE *file = fopen("password.txt", "a+");
     if (file == NULL)
@@ -184,7 +184,7 @@ int signup(user *pp)
         return 1;
     }
 
-    structwriter(pp, howmanyline(passwords), "password", p);
+    structwriter(pp, structvalexistance(pp, "password.txt", p));
 }
 
 int delete(const char filename[15], char valuetoD[])
@@ -339,30 +339,30 @@ int scorcaculator(int answerscor, int *result, int *secsesif)
 
     if (answerscor = 0)
     {
-        result -= secsesif;
-        secsesif = 0;
+        *result -= *secsesif;
+        *secsesif = 0;
         printf("that is not the right way son \n");
     }
     else
     {
-        result++;
-        secsesif++;
+        *result++;
+        *secsesif++;
     }
-    if (10 - secsesif == 7)
+    if ((10 - *secsesif) == 7)
     {
         printf("i like your spirit \n>");
     }
-    elsif(10 - secsesif == 4)
+    elsif((10 - *secsesif) == 4)
     {
-        printf("%d one after another you are the best \n>", 10 - secsesif);
+        printf("%d one after another you are the best \n>", 10 - *secsesif);
     }
-    elseif(10 - secsesif == 0)
+    elseif(10 - *secsesif == 0)
     {
         printf("respect +  you are a nerd \n");
     }
 
-    result += secsesif;
-    return result;
+    *result += *secsesif;
+    return *result;
 }
 int userpassdeleter(char u[40])
 {
@@ -409,12 +409,12 @@ int printer(const char filename[])
 int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
 {
     int i = 0;
-    bool found == false;
-    for (i = 0; i < maxusers; i++)
+    bool found = 0;
+    for (i = 0; i < MAXUSERS; i++)
     {
         if (p[i]->atribut == scanedvalue)
         {
-            found == true;
+            found = 1;
         }
     }
     if (found)
@@ -428,27 +428,23 @@ int structvalexistance(user *p, const char atribut[10], char scanedvalue[40])
     }
 }
 
+int structwriter(user *p, int id, const char atribut[10], union value)
+{
 
-    int structwriter(user *p, int id, const char atribut[10], union Value)
+    if (strcmp(atribut, "id") == 0 || strcmp(atribut, "score") == 0)
     {
-        
-        if (strcmp(atribut, "id") == 0 || strcmp(atribut, "score") == 0)
-        {
-            return write_int_to_struct(p, id, atribut, value.int_value);
-        }
-        else if (strcmp(atribut, "username") == 0 || strcmp(atribut, "password") == 0)
-        {
-            return write_string_to_struct(p, id, atribut, value.string_value);
-        }
-        else
-        {
-            printf("Invalid attribute\n");
-            return -1;
-        }
+        return write_int_to_struct(p, id, atribut, value.int_value);
     }
-
-    
-
+    else if (strcmp(atribut, "username") == 0 || strcmp(atribut, "password") == 0)
+    {
+        return write_string_to_struct(p, id, atribut, value.string_value);
+    }
+    else
+    {
+        printf("Invalid attribute\n");
+        return -1;
+    }
+}
 
 int write_int_to_struct(user *p, int id, const char atribut[10], int value)
 {
@@ -466,10 +462,9 @@ int write_int_to_struct(user *p, int id, const char atribut[10], int value)
         return -1;
     }
 
-   
-    char filename[50];                      
-    strncpy(filename, atribut);
-              
+    char filename[50];
+    strncpy((char *)filename, (char *)atribut);
+
     strcat(filename, ".txt");
 
     FILE *fp = fopen(filename, "a+");
@@ -479,12 +474,11 @@ int write_int_to_struct(user *p, int id, const char atribut[10], int value)
         return -1;
     }
 
-    fprintf(fp, "%d\n", value); 
+    fprintf(fp, "%d\n", value);
 
     fclose(fp);
     return 1;
 }
-
 
 int write_string_to_struct(user *p, int id, const char atribut[10], char value[50])
 {
@@ -494,8 +488,8 @@ int write_string_to_struct(user *p, int id, const char atribut[10], char value[5
     }
     else if (strcmp(atribut, "password") == 0)
     {
-        
-        strcpy(p[id].password, value); 
+
+        strcpy(p[id].password, value);
     }
     else
     {
@@ -503,11 +497,10 @@ int write_string_to_struct(user *p, int id, const char atribut[10], char value[5
         return -1;
     }
 
-    
-    char filename[50];
-    strncpy(filename, atribut);
-    
-    strcat(filename,".txt");
+    const char filename[50];
+    strncpy((char *)filename, (char *)atribut);
+
+    strcat(filename, ".txt");
 
     FILE *fp = fopen(filename, "a+");
     if (fp == NULL)
@@ -640,5 +633,3 @@ int loginusingstruct(user *pn)
         tryes++;
     } while (tryes < 4);
 }
-
-
