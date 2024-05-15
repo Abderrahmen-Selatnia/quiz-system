@@ -46,11 +46,11 @@ void main()
     scanf(" %c", &choice);
     if (choice == 'n')
     {
-        signup(upoint);
+        signup(upoint,&username,&password);
     }
     else if (choice == '\n')
     {
-        int s = loginusingstruct(upoint);
+        int s = loginusingstruct(upoint,&username,&password);
         if (1 == s)
         {
             bool resume = 1;
@@ -68,7 +68,7 @@ void main()
                     exit(0);
 
                 case 'A':
-                    signup(upoint);
+                    signup(upoint, &username, &password);
                     break;
 
                 case 'E':
@@ -103,7 +103,7 @@ void main()
 
                     printf("please enter the username of the user you want to delete:\n>");
                     scanf("%s", username);
-                    delete ("users.txt", username);
+                    delete("users.txt",username);
                     userpassdeleter(username);
                     break;
 

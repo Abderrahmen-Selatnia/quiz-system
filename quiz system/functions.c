@@ -140,7 +140,7 @@ int spisifiedlinecheck(char tochek[50], int lineN, const char filename[])
     }
 }
 
-int signup(user *pp)
+int signup(user *pp,char *username,char *password)
 {
     char u[40], p[40];
     printf("please enter your username");
@@ -160,6 +160,7 @@ int signup(user *pp)
     else
     {
         fprintf(fileu, "%s\n", u);
+        strcpy(*username,u);
         fclose(fileu);
         return 1;
     }
@@ -180,6 +181,7 @@ int signup(user *pp)
     else
     {
         fprintf(file, "%s\n", p);
+        strcpy(*password, p);
         fclose(file);
         return 1;
     }
@@ -205,7 +207,7 @@ int delete(const char filename[15], char valuetoD[])
     {
         while (fscanf(file, "s", readingtemp) != 0)
         {
-            if (strcasecmp(readingtemp, valuetoD) == 0)
+            if (strcasecmp(readingtemp,valuetoD) == 0)
             {
                 continue;
             }
@@ -574,7 +576,7 @@ int passwordvalidation(char p[40])
     }
     return 1;
 }
-int loginusingstruct(user *pn)
+int loginusingstruct(user *pn,char *username,char *password)
 {
     char u[40], p[40];
     int tryes = 0;
@@ -595,6 +597,7 @@ int loginusingstruct(user *pn)
         }
 
     } while (checker(u) != 0 && checker(u) != -1);
+    strcpy(*username,u);
     if (strcmp(u, "admin") == 0)
     {
         printf("welcom back admin please enter your password to authenticate");
@@ -604,6 +607,7 @@ int loginusingstruct(user *pn)
             scanf("%s", p);
             if (pn[0]->password == p[0] && pn[0]->username == u)
             {
+                strcpy(*password, p);
                 return 1;
             }
             else
