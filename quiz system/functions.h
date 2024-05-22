@@ -32,7 +32,8 @@ int userpassdeleter(char u[40]);
 int printer(const char filename[]);
 int passwordvalidation(char p[40]);
 int loginusingstruct(user *pn, char *username, char *password);
-void edituserS(user *p, int id) void deleteuserS(user *p, int id)
+void edituserS(user *p, int id);
+void deleteuserS(user *p, int id);
 int usernamevalidation(char *username);
 int findidforenw(user *p);
 int addinstruct(user *p, int id, char *password[], char *username[]);

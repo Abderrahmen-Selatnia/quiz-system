@@ -1,4 +1,4 @@
-#include"functions.h"
+#include "functions.h"
 
 int greeting()
 {
@@ -45,8 +45,6 @@ int spisifiedlinecheck(char tochek[50], int lineN, const char filename[])
     }
 }
 
-
-
 int deletee(const char filename[15], char valuetoD[])
 {
     const char tempfile[15];
@@ -65,7 +63,7 @@ int deletee(const char filename[15], char valuetoD[])
     {
         while (fscanf(file, "s", readingtemp) != 0)
         {
-            if (strcasecmp(readingtemp,valuetoD) == 0)
+            if (strcasecmp(readingtemp, valuetoD) == 0)
             {
                 continue;
             }
@@ -85,7 +83,8 @@ int deletee(const char filename[15], char valuetoD[])
     }
 }
 
-int edit(const char filename[15], char valuetoD[500], char newvalue[500]){
+int edit(const char filename[15], char valuetoD[500], char newvalue[500])
+{
 
     const char tempfile[15];
     char readingtemp[500];
@@ -356,86 +355,76 @@ int loginusingstruct(user *p, int id)
     return 0;
 }
 
-int addinstruct(user *p,int id,char *password[],char *username[]){
-        printf("enter username");
-        scanf("%s",*username);
-        if (!usernamevalidation(*username))
-        {
-            do
-            {
-                printf("please enter a valid username");
-                scanf("%s", *username);
-
-            } while (!usernamevalidation(*username));
-        }
-        else
-        {
-
-            p[id]->username = *username;
-        }
-        
-        
-        printf("enter password");
-        scanf("%s",*password);
-
-        if (!passwordvalidation(*password))
-        {
-            do
-            {
-                printf("please enter a valid password");
-                scanf("%s",*password);
-
-            } while (!passwordvalidation(*password));
-            
-
-        }else
-        {
-            
-            p[id]->password = *password;
-        }
-        
-        
-        
-        
-        
-        
-        
-        return 1;
-}
-int findidforenw(user *p){
-
-for (int i = 0; i < MAXUSERS; i++)
+int addinstruct(user *p, int id, char *password[], char *username[])
 {
-    if (p[i]->id=0)
+    printf("enter username");
+    scanf("%s", *username);
+    if (!usernamevalidation(*username))
     {
-        return i;
+        do
+        {
+            printf("please enter a valid username");
+            scanf("%s", *username);
+
+        } while (!usernamevalidation(*username));
+    }
+    else
+    {
+
+        p[id]->username = *username;
+    }
+
+    printf("enter password");
+    scanf("%s", *password);
+
+    if (!passwordvalidation(*password))
+    {
+        do
+        {
+            printf("please enter a valid password");
+            scanf("%s", *password);
+
+        } while (!passwordvalidation(*password));
+    }
+    else
+    {
+
+        p[id]->password = *password;
+    }
+
+    return 1;
+}
+int findidforenw(user *p)
+{
+
+    for (int i = 0; i < MAXUSERS; i++)
+    {
+        if (p[i]->id = 0)
+        {
+            return i;
+        }
     }
 }
-}
-int usernamevalidation(char *username){
-for (int i = 0; i < MAXUSERS; i++)
+int usernamevalidation(char *username)
 {
-    if (strcasecmp(p[i]->username,*username)==0)
+    for (int i = 0; i < MAXUSERS; i++)
     {
-        return 1;
-        break;
+        if (strcasecmp(p[i]->username, *username) == 0)
+        {
+            return 1;
+            break;
+        }
     }
-}
 
     return 0;
-
-
-
-
-
 }
 void deleteuserS(user *p, int id)
 {
     if (p[id]->id != 0)
     {
         p[id]->= 0;
-        p[id]->username='0';
-        p[id]->password='0';
+        p[id]->username = '0';
+        p[id]->password = '0';
         p[id]->score = 0;
         printf("User deleted successfully.\n");
     }
@@ -448,16 +437,17 @@ void edituserS(user *p, int id)
 {
     if (p[id]->id != 0)
     {
-       
+
         char stemp[50];
         printf("Enter new username: ");
         scanf("%s", stemp);
-        if (strcasecmp(stemp,'\n') == 0){
-            continue;
-        }else
+        if (strcasecmp(stemp, '\n') == 0)
         {
-        scanf("%s", p[id]->username);
-            
+            continue;
+        }
+        else
+        {
+            scanf("%s", p[id]->username);
         }
         printf("Enter new password: ");
         scanf("%s", stemp);
@@ -470,8 +460,6 @@ void edituserS(user *p, int id)
             scanf("%s", p[id]->password);
         }
 
-        
-        
         printf("User details updated successfully.\n");
     }
     else
@@ -479,15 +467,15 @@ void edituserS(user *p, int id)
         printf("User with ID %d not found.\n", id);
     }
 }
-int userid(char username[],int*id){
-for (int i = 0; i <MAXUSERS; i++)
+int userid(char username[], int *id)
 {
-    if (strcmp(p->username,username)==0)
+    for (int i = 0; i < MAXUSERS; i++)
     {
-        *id=i;
-        return i;
+        if (strcmp(p->username, username) == 0)
+        {
+            *id = i;
+            return i;
+        }
     }
+    return -1;
 }
-return -1;
-}hi aziz it working 
-
