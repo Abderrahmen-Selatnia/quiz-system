@@ -1,9 +1,214 @@
 #include "functions.h"
 
-int greeting()
+void greeting()
 {
 
     printf("################## Hello, welcome to the Quizing system ######################\n press enter to sing in else \n 'n' to sing up ");
+}
+
+int checker(char u[30], const char filename[15])
+{
+
+    int linenumber = 1;
+    FILE *file;
+    char tempcmpusername[30];
+    file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        printf("could not check the username properly");
+        return -1;
+    }
+    while (fscanf(file, "%s", tempcmpusername) != 0)
+    {
+
+        if (strcmp(u, tempcmpusername) == 0)
+        {
+
+            printf("user name is already taken");
+            return linenumber;
+            break;
+        }
+        linenumber++;
+    }
+    printf("username is not taken yet");
+    return 0;
+    fclose(file);
+}
+
+int findlinenumber(char valuetochek[500], const char filename)
+{
+
+    int linenumber = 1;
+    char tempval[300];
+
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        printf("error opning file");
+        return -1;
+    }
+
+    while (fscanf(filename, "s", tempval) != 0)
+    {
+
+        if (tempval == valuetochek)
+        {
+
+            return linenumber;
+        }
+        linenumber++;
+    }
+    return -1;
+}
+
+int login(user *p, char *username[], char *password[])
+{
+    int Uline = 0, tryes = 1;
+    char tempu[30], tempp[30];
+    printf("please enter your username: \n>");
+    fgets(tempu, sizeof(tempu), stdin);
+    if (strcmp("admin", tempu) == 0)
+    {
+        printf("Now please type the password: \n>");
+
+        FILE *fpp = fopen("password.txt", "r");
+
+        if (fpp == NULL)
+        {
+            printf("could not open file ");
+            return -1;
+        }
+        fgets(tempp, sizeof(tempp), stdin);
+        do
+        {
+            fscanf(fpp, "%s", &password);
+
+            Uline = findlinenumber(&password, "passwords");
+            if (strcasecmp(*password, tempp) == 0 && Uline != -1)
+            {
+                printf("welcome admin\n");
+                fgets(*username, sizeof(*username), tempu);
+                return 1;
+            }
+            else
+            {
+                printf("wrong password try again (%d tryes left) please:\n>", 4 - tryes);
+                tryes++;
+            }
+        } while (strcasecmp(*password, tempp) != 0 && tryes < 4);
+    }
+    else
+    {
+        if (checker(tempu, "users.txt") != 0)
+        {
+            Uline = checker(tempu, "users.txt");
+            printf("Now please type the password: \n>");
+
+            FILE *fpp = fopen("password.txt", "r");
+            if (fpp == NULL)
+            {
+                printf("could not open file ");
+                return -1;
+            }
+
+            do
+            {
+                fgets(tempp, sizeof(tempp), stdin);
+                if (spisifiedlinecheck(tempp, Uline, "paswords.txt"))
+                {
+                    printf("welcome");
+                    fgets(*username, sizeof(*username), tempu);
+                    return 2;
+                }
+                else
+                {
+                    printf("wrong password try again (%d tryes left) please:\n>", 4 - tryes);
+                    tryes++;
+                }
+            } while (strcasecmp(*password, tempp) != 0 && tryes < 4);
+        }
+    }
+}
+
+int signup(user *ptr, char *u[], char *p[])
+{
+    int tryes = 4;
+
+    printf("please enter your username");
+    scanf("%s", u);
+    if (checker(u, "users.txt") == 0)
+    {
+        FILE *fileu = fopen("user.txt", "a+");
+        if (fileu == NULL)
+        {
+            printf("error opening file");
+            return -1;
+        }
+        else
+        {
+            fprintf(fileu, "%s\n", u);
+            fclose(fileu);
+            return 1;
+        }
+    }
+    else
+    {
+
+        FILE *fileu = fopen("user.txt", "a+");
+        if (fileu == NULL)
+        {
+            printf("error opening file");
+            return -1;
+        }
+        else
+        {
+
+            do
+            {
+                printf("please enter a valid username \n>");
+                scanf("%s", u);
+                tryes--;
+
+            } while (checker(u, "users.txt") != 0 && tryes > 0);
+
+            fprintf(fileu, "%s\n", u);
+            fclose(fileu);
+            return 1;
+        }
+
+        fprintf(fileu, "%s\n", u);
+        fclose(fileu);
+        return 1;
+    }
+
+    printf("please enter your password");
+    scanf("%s", p);
+    if (passwordvalidation(p))
+    {
+        FILE *file = fopen("password.txt", "a+");
+        if (file == NULL)
+        {
+            printf("error opening file");
+            return -1;
+        }
+        else
+        {
+            fprintf(file, "%s\n", p);
+            fclose(file);
+            return 1;
+        }
+    }
+    else
+    {
+
+        do
+        {
+            printf("please try again and try with valid password\n>");
+            scanf("%s", &p);
+        } while (!passwordvalidation(p));
+    }
+
+    addinstruct(ptr, userid(ptr, findidforenw(ptr)), p, u);
 }
 
 int spisifiedlinecheck(char tochek[50], int lineN, const char filename[])
@@ -210,11 +415,11 @@ int scorcaculator(int answerscor, int *result, int *secsesif)
     {
         printf("i like your spirit \n>");
     }
-    elsif((10 - *secsesif) == 4)
+    else if ((10 - *secsesif) == 4)
     {
         printf("%d one after another you are the best \n>", 10 - *secsesif);
     }
-    elseif(10 - *secsesif == 0)
+    else if (10 - *secsesif == 0)
     {
         printf("respect +  you are a nerd \n");
     }
@@ -241,7 +446,7 @@ int userpassdeleter(char u[40])
 
         if (Uline == line)
         {
-            delete ("paswwords.txt", temppass);
+            deletee("paswwords.txt", temppass);
         }
         else
         {
@@ -260,7 +465,7 @@ int printer(const char filename[])
 
     while (feof != 0)
     {
-        fprintf(file, "%s\n", stdout);
+        fprintf(file, " %s\n", stdout);
     }
 }
 
@@ -281,19 +486,19 @@ int passwordvalidation(char p[40])
     for (int i = 0; i < strlen(p); i++)
     {
 
-        if (isupper(p[i]))
+        if (isupper((p + i)))
         {
             hasspecialcharacter = true;
         }
-        if (islower(p[i]))
+        if (islower((p + i)))
         {
             haslowercharcter = true;
         }
-        if (isdigit(p[i]))
+        if (isdigit((p + i)))
         {
             hasnumber = true;
         }
-        if (ispunct(p[i]))
+        if (ispunct((p + i)))
         {
             hasasymbole = true;
         }
@@ -333,7 +538,7 @@ int loginusingstruct(user *p, int id)
         printf("Enter password (you have %d tries left): ", triesLeft);
         scanf("%s", password);
 
-        if (strcmp(p[id]->password, password) == 0)
+        if (strcmp((p + id)->password, password) == 0)
         {
             printf("Login successful!\n");
             return 1;
@@ -371,7 +576,7 @@ int addinstruct(user *p, int id, char *password[], char *username[])
     else
     {
 
-        p[id]->username = *username;
+        strcpy((p + id)->username, *username);
     }
 
     printf("enter password");
@@ -389,7 +594,7 @@ int addinstruct(user *p, int id, char *password[], char *username[])
     else
     {
 
-        p[id]->password = *password;
+        strcpy((p + id)->password, *password);
     }
 
     return 1;
@@ -399,17 +604,17 @@ int findidforenw(user *p)
 
     for (int i = 0; i < MAXUSERS; i++)
     {
-        if (p[i]->id = 0)
+        if ((p + i)->id = 0)
         {
             return i;
         }
     }
 }
-int usernamevalidation(char *username)
+int usernamevalidation(user *p, char *username)
 {
     for (int i = 0; i < MAXUSERS; i++)
     {
-        if (strcasecmp(p[i]->username, *username) == 0)
+        if (strcasecmp((p + i)->username, *username) == 0)
         {
             return 1;
             break;
@@ -420,12 +625,12 @@ int usernamevalidation(char *username)
 }
 void deleteuserS(user *p, int id)
 {
-    if (p[id]->id != 0)
+    if ((p + id)->id != 0)
     {
-        p[id]->= 0;
-        p[id]->username = '0';
-        p[id]->password = '0';
-        p[id]->score = 0;
+        (p + id)->id = 0;
+        strcpy((p + id)->username, '0');
+        strcpy((p + id)->password, '0');
+        (p + id)->score = 0;
         printf("User deleted successfully.\n");
     }
     else
@@ -435,29 +640,23 @@ void deleteuserS(user *p, int id)
 }
 void edituserS(user *p, int id)
 {
-    if (p[id]->id != 0)
+    if ((p + id)->id != 0)
     {
 
         char stemp[50];
         printf("Enter new username: ");
         scanf("%s", stemp);
-        if (strcasecmp(stemp, '\n') == 0)
+        if (strcasecmp(stemp, '\n') != 0)
         {
-            continue;
-        }
-        else
-        {
-            scanf("%s", p[id]->username);
+
+            scanf("%s", (p + id)->username);
         }
         printf("Enter new password: ");
         scanf("%s", stemp);
-        if (strcasecmp(stemp, '\n') == 0)
+        if (strcasecmp(stemp, '\n') != 0)
         {
-            continue;
-        }
-        else
-        {
-            scanf("%s", p[id]->password);
+
+            scanf("%s", (p + id)->password);
         }
 
         printf("User details updated successfully.\n");
@@ -467,15 +666,59 @@ void edituserS(user *p, int id)
         printf("User with ID %d not found.\n", id);
     }
 }
-int userid(char username[], int *id)
+int userid(user *p, char username[])
 {
     for (int i = 0; i < MAXUSERS; i++)
     {
-        if (strcmp(p->username, username) == 0)
+        if (strcmp((p + i)->username, username) == 0)
         {
-            *id = i;
             return i;
         }
     }
     return -1;
+}
+
+int fileloader(const char filename,user **ptr){
+    int i = 0;
+    char buffer[40];
+    int bufferi;
+    FILE* file = fopen(filename,"r");
+    if (file == NULL)
+    {
+        printf("error opning file for loading",filename);
+        return -1;
+    }
+    while (fscanf(filename, "%s", buffer) != 0)
+    {
+
+        i++;
+    }
+    *ptr = (user *)malloc(i * sizeof(user));
+    i = 0;
+    if (strcmp(filename, "users.txt") == 0)
+    {
+        while (fscanf(filename, "%s", buffer) != 0)
+        {
+            strcpy(*(*ptr + i)->username, buffer);
+            i++;
+        }
+    }
+    if (strcmp(filename, "passwords.txt") == 0)
+    {
+        while (fscanf(filename, "%s", buffer) != 0)
+        {
+            strcpy(*(*ptr + i)->password, buffer);
+            i++;
+        }
+    }
+    if (strcmp(filename, "scoors.txt") == 0)
+    {
+
+        while (fscanf(filename, "%d", bufferi) != 0)
+        {
+            strcpy(*(*ptr + i)->score, bufferi);
+            i++;
+        }
+    }
+    return 1;
 }
