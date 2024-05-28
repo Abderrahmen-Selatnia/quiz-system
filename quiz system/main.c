@@ -6,6 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <time.h>
+#include <unistd.h>
 
 int MAXUSERS=1000;
 
@@ -19,8 +25,7 @@ typedef struct user
 
 void greeting()
 {
-
-    printf("################## Hello, welcome to the Quizing system ######################\n press enter to sing in else \n 'n' to sing up ");
+printf("Press Enter to sign up or 'l' to log in: ");
 }
 
 int checker(char u[], const char filename[])
@@ -308,88 +313,38 @@ int signup(user *ptr, char u[], char p[])
 {
     int tryes = 4;
 
-    printf("please enter your username");
+    printf("Please enter your username: ");
     scanf("%s", u);
-    if (checker(u, "users.txt") == 0)
+
+    if (checker(u, "users.txt") != 0)
     {
-        FILE *fileu = fopen("users.txt", "a+");
-        if (fileu == NULL)
-        {
-            printf("error opening file");
-            return -1;
-        }
-        else
-        {
-            fprintf(fileu, "%s\n", u);
-            fclose(fileu);
-            return 1;
-        }
-    }
-    else
-    {
-
-        FILE *fileu = fopen("users.txt", "a+");
-        if (fileu == NULL)
-        {
-            printf("error opening file");
-            return -1;
-        }
-        else
-        {
-            if (checker(u, "users.txt") != 0 && tryes > 0)
-            {
-                printf("please enter a valid username \n>");
-                scanf("%s", u);
-
-                do
-                {
-
-                    tryes--;
-
-                } while (checker(u, "users.txt") != 0 && tryes > 0);
-            }
-            else
-            {
-                fprintf(fileu, "%s\n", u);
-                fclose(fileu);
-                return 1;
-            }
-        }
-
-        fprintf(fileu, "%s\n", u);
-        fclose(fileu);
-        return 1;
+        printf("Username is already taken.\n");
+        return -1;
     }
 
-    printf("please enter your password");
+    FILE *fileu = fopen("users.txt", "a+");
+    if (fileu == NULL)
+    {
+        printf("Error opening file for writing.\n");
+        return -1;
+    }
+
+    fprintf(fileu, "%s\n", u);
+    fclose(fileu);
+
+    printf("Please enter your password: ");
     scanf("%s", p);
-    if (passwordvalidation(p))
-    {
-        FILE *file = fopen("password.txt", "a+");
-        if (file == NULL)
-        {
-            printf("error opening file");
-            return -1;
-        }
-        else
-        {
-            fprintf(file, "%s\n", p);
-            fclose(file);
-            return 1;
-        }
-    }
-    else
-    {
 
-        do
-        {
-            printf("please try again and try with valid password\n>");
-            scanf("%s", p);
-        } while (!passwordvalidation(p));
+    if (!passwordvalidation(p))
+    {
+        printf("Invalid password. Please try again.\n");
+        return -1;
     }
 
     addinstruct(ptr, findidforenw(ptr), p, u);
-}
+    return 1;
+    }
+
 int deletee(const char filename[], char valuetoD[])
 {
     const char tempfile[15];
@@ -781,50 +736,59 @@ int loginstructv2(user *ptr, char username[], char password[], int MAXUSERS)
     }
 }
 
-void main()
+
+
+int main()
 {
-    int *result = (int *)malloc(sizeof(int));
-    int *secsesif = (int *)malloc(sizeof(int));
-    int questionline = 0;
-    user users[MAXUSERS];
-    user *p = users; // Directly initialize p to the users array
+        int result = 0;
+        user users[MAXUSERS];
+        user *p = users; // Directly initialize p to the users array
 
-    char username[40], password[40];
-    int id;
-    char answer[500], valuetoD[500], newvalue[500];
-    int starttime = time(NULL);
-    int targetT = starttime + 60;
-    const char filename[20];
-    char tempfilename[20];
+        char username[40], password[40];
+        char choice;
 
-    char choice;
+        greeting();
+        fflush(stdin);
+        fileloader("users.txt", &p, &MAXUSERS);
+        fileloader("passwords.txt", &p, &MAXUSERS);
+        fileloader("scores.txt", &p, &MAXUSERS);
 
-    greeting();
-    fileloader("users.txt", &p, &MAXUSERS);
-    fileloader("passwords.txt", &p, &MAXUSERS);
-    fileloader("scores.txt", &p, &MAXUSERS);
+        scanf("%c", &choice);
+        if (choice == '\n') // Changed 'n' to '\n' for signup
+        {
+            printf("Enter username: ");
+            scanf("%s", username);
+            printf("Enter password: ");
+            scanf("%s", password);
 
-    scanf("%c", &choice);
-    if (choice == '\n') // Changed 'n' to '\n' for signup
-    {
-        printf("Enter username: ");
-        scanf("%s", username);
-        printf("Enter password: ");
-        scanf("%s", password);
+            result = signup(p, username, password); // Pass arrays directly, not pointers
+            if (result == 1)
+            {
+                printf("Sign up successful!\n");
+            }
+            else
+            {
+                printf("Sign up failed. Please try again.\n");
+            }
+        }
+        else if (choice == 'l') // Changed '\n' to 'l' for login
+        {
+            printf("Enter username: ");
+            scanf("%s", username);
+            printf("Enter password: ");
+            scanf("%s", password);
 
-        signup(p, username, password); // Pass arrays directly, not pointers
-    }
-    else if (choice == 'l') // Changed '\n' to 'l' for login
-    {
-        printf("Enter username: ");
-        scanf("%s", username);
-        printf("Enter password: ");
-        scanf("%s", password);
+            int s = loginstructv2(p, username, password, MAXUSERS);
+            if (s == 1)
+            {
+                printf("Login successful!\n");
+                // Proceed with actions after login...
+            }
+            else
+            {
+                printf("Login failed. Please try again.\n");
+            }
+        }
 
-        int s = loginstructv2(p, username, password, MAXUSERS);
-        // Continue with your login logic...
-    }
-
-    free(result);
-    free(secsesif);
-}
+        return 0;
+ }
