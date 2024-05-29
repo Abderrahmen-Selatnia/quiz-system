@@ -14,7 +14,10 @@
 #include <unistd.h>
 
 int MAXUSERS=1000;
+#define MAX_QUESTION_LENGTH 500
+#define MAX_ANSWER_LENGTH 500
 
+char answer[MAX_ANSWER_LENGTH];
 typedef struct user
 {
     char username[32];
@@ -28,33 +31,39 @@ void greeting()
 printf("Press Enter to sign up or 'l' to log in: ");
 }
 
+
 int checker(char u[], const char filename[])
 {
 
-    int linenumber = 1;
     FILE *file;
-    char tempcmpusername[30];
+    char line[30];
+    int linenumber = 1;
+
     file = fopen(filename, "r");
     if (file == NULL)
     {
-        printf("could not check the username properly");
+        // Could not open file
         return -1;
     }
-    while (fscanf(file, "%s", tempcmpusername) != 0)
+
+    // Read each line of the file
+    while (fgets(line, sizeof(line), file) != NULL)
     {
+        // Remove newline character if present
+        line[strcspn(line, "\n")] = '\0';
 
-        if (strcmp(u, tempcmpusername) == 0)
+        if (strcmp(u, line) == 0)
         {
-
-            printf("user name is already taken");
+            // Username found
+            fclose(file);
             return linenumber;
-            break;
         }
         linenumber++;
     }
-    printf("username is not taken yet");
-    return 0;
+
+    // Username not found
     fclose(file);
+    return -2;
 }
 int findlinenumber(char valuetochek[], const char filename[])
 {
@@ -140,10 +149,11 @@ int passwordvalidation(char p[])
     bool haslowercharcter = false;
     bool redcuiredlengh = false;
     bool hasasymbole = false;
-    if (strlen(p) < 8)
+    bool neededlenght = false;
+    if (strlen(p) >= 8)
     {
-        printf("password must be at least 8 characters long\n");
-        return -1;
+
+        neededlenght = true;
     }
 
     for (int i = 0; i < strlen(p); i++)
@@ -165,6 +175,11 @@ int passwordvalidation(char p[])
         {
             hasasymbole = true;
         }
+    }
+    if (!neededlenght)
+    {
+        printf("password must be at least 8 characters long\n");
+        return 0;
     }
     if (!hasasymbole)
     {
@@ -311,16 +326,30 @@ int findidforenw(user *p)
 }
 int signup(user *ptr, char u[], char p[])
 {
-    int tryes = 4;
+    int tries = 4;
+    int validUsername = 0; // Flag to track if the username is valid
+    int validPassword = 0; // Flag to track if the password is valid
 
-    printf("Please enter your username: ");
-    scanf("%s", u);
-
-    if (checker(u, "users.txt") != 0)
+    do
     {
-        printf("Username is already taken.\n");
-        return -1;
-    }
+        printf("Please enter your username: ");
+        scanf("%s", u);
+
+        if (checker(u, "users.txt") != -2)
+        {
+            printf("Username is already taken.\n");
+            tries--;
+            if (tries == 0)
+            {
+                printf("You've exceeded the maximum number of attempts.\n");
+                return -1;
+            }
+        }
+        else
+        {
+            validUsername = 1; // Username is valid, exit the loop
+        }
+    } while (!validUsername);
 
     FILE *fileu = fopen("users.txt", "a+");
     if (fileu == NULL)
@@ -332,16 +361,31 @@ int signup(user *ptr, char u[], char p[])
     fprintf(fileu, "%s\n", u);
     fclose(fileu);
 
-    printf("Please enter your password: ");
-    scanf("%s", p);
+    tries = 4; // Reset tries for password validation retries
 
-    if (!passwordvalidation(p))
+    do
     {
-        printf("Invalid password. Please try again.\n");
-        return -1;
-    }
+        printf("Please enter your password: ");
+        scanf("%s", p);
 
-    addinstruct(ptr, findidforenw(ptr), p, u);
+        if (!passwordvalidation(p))
+        {
+            printf("Invalid password. Please try again.\n");
+            tries--;
+            if (tries == 0)
+            {
+                printf("You've exceeded the maximum number of attempts.\n");
+                return -1;
+            }
+        }
+        else
+        {
+            validPassword = 1; // Password is valid, exit the loop
+        }
+    } while (!validPassword);
+
+    // Add other necessary actions here (e.g., saving the password to a file)
+
     return 1;
     }
 
@@ -422,104 +466,188 @@ int edit(const char filename[], char valuetoD[], char newvalue[])
 }
 int howmanyline(const char filename[])
 {
-    int linenumber = 1;
+    int lines = 0;
+    char ch;
     FILE *file = fopen(filename, "r");
+
     if (file == NULL)
     {
-        printf("error opning a file");
+        printf("Error opening file: %s\n", filename);
         return -1;
     }
 
-    while (feof(file) != 0)
+    while ((ch = fgetc(file)) != EOF)
     {
-        linenumber++;
-    }
-    return linenumber;
-}
-int quizing(char username[])
-{
-
-    int line, linenumber = 1;
-    char tempQ[300];
-    srand(time(NULL));
-    line = rand() % (howmanyline("questions"), 1);
-    FILE *file = fopen("questions", "r");
-    if (file == NULL)
-    {
-        printf("error opning file");
-        return -1;
-    }
-
-    while (fscanf(file, "%s", tempQ) != 0)
-    {
-
-        if (linenumber == line)
+        if (ch == '\n')
         {
-            printf("YOUR QUESTION IS : %s", tempQ);
-            break;
+            lines++;
         }
-        linenumber++;
     }
-    return linenumber;
-}
-int chekanswer(char answer[], int Qlinenumber)
-{
-    FILE *file = fopen("aswers", "r");
-    if (file == NULL)
-    {
-        printf("error opning a file ");
-        return -1;
-    }
-    char rightA[500], tempA[500];
 
-    int linenumber = 1;
-    while (fscanf(file, "%s", tempA))
-    {
-        if (strcmp(tempA, answer) == 0 && linenumber == Qlinenumber)
-        {
-            strcpy(rightA, tempA);
-            printf("right answer \n>");
-            return 1;
-        }
-        else
-        {
-            printf("wrong answer \n>");
-            printf("ther right answer was :%s", rightA);
-            return 0;
-        }
-        linenumber++;
-    }
+    fclose(file);
+    return lines;
 }
-int scorcaculator(int answerscor, int *result, int *secsesif)
-{
 
-    if (answerscor = 0)
+void stopwatch(int minutes)
+{
+    int seconds = minutes * 60;
+    while (seconds > 0)
     {
-        *result -= *secsesif;
-        *secsesif = 0;
-        printf("that is not the right way son \n");
+        printf("\r                                           Time remaining: %02d:%02d", seconds / 60, seconds % 60);
+        fflush(stdout);
+        sleep(1);
+        seconds--;
+    }
+    printf("\rTime is up! \n");
+}
+
+int scoreCalculator(char answer, int *result, int *successive, int usernameLine)
+{
+    if (answer == 'Y' || answer == 'y')
+    {
+        *result += 1;     // Increment score for correct answer
+        *successive += 1; // Increment successive counter
+        printf("Correct answer!\n");
+
+        // Check for successive bonus
+        if (*successive == 3)
+        {
+            *result += 5; // Apply a bonus for answering 3 questions correctly in a row
+            printf("Three in a row! Bonus points added.\n");
+        }
     }
     else
     {
-        *result++;
-        *secsesif++;
-    }
-    if ((10 - *secsesif) == 7)
-    {
-        printf("i like your spirit \n>");
-    }
-    else if ((10 - *secsesif) == 4)
-    {
-        printf("%d one after another you are the best \n>", 10 - *secsesif);
-    }
-    else if (10 - *secsesif == 0)
-    {
-        printf("respect +  you are a nerd \n");
+        *successive = 0; // Reset successive bonus if answer is incorrect
+        printf("Incorrect answer.\n");
     }
 
-    *result += *secsesif;
+    // Store the score in scores.txt at the same line number as the username
+    FILE *scoresFile = fopen("scores.txt", "r+");
+    if (scoresFile == NULL)
+    {
+        printf("Error opening scores file.\n");
+        return -1;
+    }
+
+    fseek(scoresFile, (usernameLine - 1) * sizeof(int), SEEK_SET); // Move to the appropriate line in scores.txt
+    fwrite(result, sizeof(int), 1, scoresFile);                    // Write the score to scores.txt
+    fclose(scoresFile);
+
     return *result;
 }
+
+int checkAnswer(const char userAnswer[], int questionLineNumber)
+{
+    FILE *file = fopen("answers.txt", "r");
+    if (file == NULL)
+    {
+        printf("Error opening answers file.\n");
+        return -1;
+    }
+
+    char correctAnswer[MAX_ANSWER_LENGTH];
+    int currentLineNumber = 1;
+    while (fgets(correctAnswer, sizeof(correctAnswer), file) != NULL)
+    {
+        if (currentLineNumber == questionLineNumber)
+        {
+            // Remove newline character from correctAnswer
+            correctAnswer[strcspn(correctAnswer, "\n")] = '\0';
+            if (strcmp(correctAnswer, userAnswer) == 0)
+            {
+                printf("Correct answer!\n");
+                fclose(file);
+                return 1;
+            }
+            else
+            {
+                printf("Wrong answer. The correct answer is: %s\n", correctAnswer);
+                fclose(file);
+                return 0;
+            }
+        }
+        currentLineNumber++;
+    }
+
+    fclose(file);
+    printf("Answer not found.\n");
+    return -1;
+}
+
+void quizing(char username[])
+{
+    int totalLines = howmanyline("questions.txt");
+    if (totalLines <= 0)
+    {
+        printf("Error reading file or file is empty.\n");
+        return;
+    }
+
+    srand(time(NULL)); // Seed the random number generator
+    int numQuestions;
+    printf("How many questions would you like to answer? ");
+    scanf("%d", &numQuestions);
+    if (numQuestions <= 0)
+    {
+        printf("Invalid number of questions.\n");
+        return;
+    }
+
+    int result = 0;                                    // Initialize result to track the score
+    int successive = 0;                                // Initialize successive to track bonus streak
+    int usernameLine = checker(username, "users.txt"); // Get the line number of the username in users.txt
+
+    for (int i = 0; i < numQuestions; i++)
+    {
+        int line = rand() % totalLines + 1; // Random line number between 1 and totalLines
+
+        char tempQ[MAX_QUESTION_LENGTH];
+        int lineNumber = 1;
+
+        FILE *file = fopen("questions.txt", "r");
+        if (file == NULL)
+        {
+            printf("Error opening questions file.\n");
+            return;
+        }
+
+        // Read questions and display the random one
+        while (fgets(tempQ, sizeof(tempQ), file) != NULL)
+        {
+            if (lineNumber == line)
+            {
+                // Remove newline character from tempQ
+                tempQ[strcspn(tempQ, "\n")] = '\0';
+                system("clear");
+                printf("Your question is: %s\n", tempQ);
+                break;
+            }
+            lineNumber++;
+        }
+        fclose(file);
+
+        // Ask for user's answer
+        char userAnswer[MAX_ANSWER_LENGTH];
+        printf("Your answer: ");
+        scanf("%s", userAnswer); // Get the user's answer
+
+        // Check the answer immediately and update the score
+        int answerStatus = checkAnswer(userAnswer, line);
+        if (answerStatus == 1)
+        {
+            scoreCalculator('Y', &result, &successive, usernameLine);
+        }
+        else
+        {
+            scoreCalculator('N', &result, &successive, usernameLine);
+        }
+    }
+
+    printf("Quiz completed! Your final score is: %d\n", result);
+}
+
+
 int userpassdeleter(char u[])
 {
     int Uline;
@@ -647,93 +775,127 @@ int userid(user *p, char username[], int maxusers)
     }
     return -1;
 }
-int fileloader(const char filename[], user **ptr, int *currentsize)
+int fileloader(const char filename[], user **ptr, int *maxUsers)
 {
-    int i = 0;
-    char buffer[40];
-    int bufferi = 0;
-    FILE *fp = fopen("users.txt", "r");
-    while (fscanf(fp, "%s", buffer) != 0)
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
     {
-
-        i++;
+        printf("Error opening file: %s\n", filename);
+        return -1;
     }
-    *currentsize += i;
-    rewind(fp);
-    *ptr = (user *)realloc(&ptr, *currentsize * sizeof(user));
 
-    i = 0;
-    if (strcmp((char *)filename, (char *)"users.txt") == 0)
+    char buffer[64];
+    int count = 0;
+    int currentMaxUsers = *maxUsers;
+
+    while (fgets(buffer, sizeof(buffer), file) != NULL)
     {
-        FILE *file = fopen("users.txt", "r");
+        buffer[strcspn(buffer, "\n")] = '\0'; // Remove newline character
 
-        if (file == NULL)
+        if (count >= currentMaxUsers)
         {
-            printf("error opning file for loading");
-            return -1;
+            currentMaxUsers *= 2; // Double the size of the array
+            user *tempPtr = realloc(*ptr, currentMaxUsers * sizeof(user));
+            if (tempPtr == NULL)
+            {
+                printf("Memory reallocation failed\n");
+                fclose(file);
+                return -1;
+            }
+            *ptr = tempPtr;
+            *maxUsers = currentMaxUsers;
         }
 
-        while (fscanf(file, "%s", buffer) != 0)
+        if (strstr(filename, "users"))
         {
-            strcpy((*ptr + i)->username, buffer);
-            i++;
+            strncpy((*ptr)[count].username, buffer, sizeof((*ptr)[count].username) - 1);
+            (*ptr)[count].username[sizeof((*ptr)[count].username) - 1] = '\0'; // Ensure null-terminated
         }
-        fclose(file);
-    }
-    if (strcmp(filename, "passwords.txt") == 0)
-    {
-        FILE *file = fopen("passwords.txt", "r");
-        if (file == NULL)
+        else if (strstr(filename, "passwords"))
         {
-            printf("error opning file for loading");
-            return -1;
+            strncpy((*ptr)[count].password, buffer, sizeof((*ptr)[count].password) - 1);
+            (*ptr)[count].password[sizeof((*ptr)[count].password) - 1] = '\0'; // Ensure null-terminated
         }
-        while (fscanf(file, "%s", buffer) != 0)
+        else if (strstr(filename, "scores"))
         {
+            (*ptr)[count].score = atoi(buffer); // Convert string to integer
+        }
 
-            i++;
-        }
-        rewind(file);
-        *ptr = (user *)realloc(&ptr, *currentsize * sizeof(user));
-        while (fscanf(file, "%s", buffer) != 0)
-        {
-            strcpy((*ptr + i)->password, buffer);
-            i++;
-        }
-        fclose(file);
+        (*ptr)[count].id = count + 1; // Assign unique ID
+
+        count++;
     }
-    if (strcmp(filename, "scores.txt") == 0)
-    {
-        FILE *file = fopen("scores.txt", "r");
-        if (file == NULL)
-        {
-            printf("error opning file for loading");
-            return -1;
-        }
-        while (fscanf(file, "%d", &bufferi) != 0)
-        {
-            (*ptr + i)->score = bufferi;
-            i++;
-        }
-        fclose(file);
-    }
-    return 1;
+
+    fclose(file);
+    return 0;
 }
+
 int loginstructv2(user *ptr, char username[], char password[], int MAXUSERS)
 {
-    int i = 0;
-    while (i < MAXUSERS)
+    int triesLeft = 4;
+    int userExists = 0;
+    int id = -1;
+    int isAdmin = 0; // Flag to track if admin signed in
+
+    while (triesLeft > 0)
     {
-        if (strcmp((ptr + i)->username, username) == 0)
+        printf("Please enter username: ");
+        scanf("%s",username);
+
+        for (int i = 0; i < MAXUSERS; i++)
         {
-            if (strcmp((ptr + i)->password, password) == 0)
+            if (strcmp((ptr + i)->username, username) == 0)
             {
-                return 1;
+                userExists = 1;
+                id = i;
+
+                
+                if (strcmp(username,"admin") == 0 )
+                {
+                    printf("Username found. Please enter password: ");
+                    scanf("%s", password);
+                    if (strcmp((ptr+i)->password, password) == 0)
+                    {
+                        
+                        isAdmin = 1;
+                        break;
+                    }
+                    
+                    
+                }
+
+                break;
             }
-            printf("user name deosnot exist");
-            return -1;
+        }
+
+        if (!userExists)
+        {
+            triesLeft--;
+            printf("Username not found. Tries left: %d\n", triesLeft);
+            continue;
+        }
+
+        if (isAdmin) // Admin signed in
+        {
+            return 9; // Unique value for admin
+        }
+
+        printf("Username found. Please enter password: ");
+        scanf("%s", password);
+
+        if (strcmp((ptr + id)->password, password) == 0)
+        {
+            return 1; // Username and password match
+        }
+        else
+        {
+            triesLeft--;
+            printf("Invalid password. Tries left: %d\n", triesLeft);
         }
     }
+
+    printf("No more tries left. Exiting...\n");
+    return -1;
 }
 
 
@@ -741,6 +903,7 @@ int loginstructv2(user *ptr, char username[], char password[], int MAXUSERS)
 int main()
 {
         int result = 0;
+        char answer[1000];
         user users[MAXUSERS];
         user *p = users; // Directly initialize p to the users array
 
@@ -756,15 +919,11 @@ int main()
         scanf("%c", &choice);
         if (choice == '\n') // Changed 'n' to '\n' for signup
         {
-            printf("Enter username: ");
-            scanf("%s", username);
-            printf("Enter password: ");
-            scanf("%s", password);
-
-            result = signup(p, username, password); // Pass arrays directly, not pointers
+           result = signup(p, username, password); // Pass arrays directly, not pointers
             if (result == 1)
             {
                 printf("Sign up successful!\n");
+                printf("%s %s %d", (p + 1)->username, (p + 1)->username, (p + 1)->id);
             }
             else
             {
@@ -773,17 +932,20 @@ int main()
         }
         else if (choice == 'l') // Changed '\n' to 'l' for login
         {
-            printf("Enter username: ");
-            scanf("%s", username);
-            printf("Enter password: ");
-            scanf("%s", password);
-
-            int s = loginstructv2(p, username, password, MAXUSERS);
+           
+            int s = loginstructv2(p, username,password, MAXUSERS);
             if (s == 1)
             {
                 printf("Login successful!\n");
+
+                quizing(username);
                 // Proceed with actions after login...
+            }else if (s == 9)
+            {
+                printf("\n*********welcome admin********\n");
+               
             }
+
             else
             {
                 printf("Login failed. Please try again.\n");
