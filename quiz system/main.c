@@ -501,9 +501,10 @@ void stopwatch(int minutes)
     printf("\rTime is up! \n");
 }
 
-int scoreCalculator(char answer, int *result, int *successive, int usernameLine)
+int scoreCalculator(char answerStatus, int *result, int *successive)
 {
-    if (answer == 'Y' || answer == 'y')
+    // Check if the answer is correct or not
+    if (answerStatus == 'Y' || answerStatus == 'y')
     {
         *result += 1;     // Increment score for correct answer
         *successive += 1; // Increment successive counter
@@ -522,18 +523,6 @@ int scoreCalculator(char answer, int *result, int *successive, int usernameLine)
         printf("Incorrect answer.\n");
     }
 
-    // Store the score in scores.txt at the same line number as the username
-    FILE *scoresFile = fopen("scores.txt", "r+");
-    if (scoresFile == NULL)
-    {
-        printf("Error opening scores file.\n");
-        return -1;
-    }
-
-    fseek(scoresFile, (usernameLine - 1) * sizeof(int), SEEK_SET); // Move to the appropriate line in scores.txt
-    fwrite(result, sizeof(int), 1, scoresFile);                    // Write the score to scores.txt
-    fclose(scoresFile);
-
     return *result;
 }
 
@@ -548,13 +537,25 @@ int checkAnswer(const char userAnswer[], int questionLineNumber)
 
     char correctAnswer[MAX_ANSWER_LENGTH];
     int currentLineNumber = 1;
+
     while (fgets(correctAnswer, sizeof(correctAnswer), file) != NULL)
     {
         if (currentLineNumber == questionLineNumber)
         {
             // Remove newline character from correctAnswer
             correctAnswer[strcspn(correctAnswer, "\n")] = '\0';
-            if (strcmp(correctAnswer, userAnswer) == 0)
+
+            // Trim leading and trailing whitespace from userAnswer
+            char trimmedUserAnswer[MAX_ANSWER_LENGTH];
+            sscanf(userAnswer, " %499[^\n]", trimmedUserAnswer);
+
+            // Convert both answers to lowercase for case-insensitive comparison
+            for (int i = 0; trimmedUserAnswer[i]; i++)
+                trimmedUserAnswer[i] = tolower(trimmedUserAnswer[i]);
+            for (int i = 0; correctAnswer[i]; i++)
+                correctAnswer[i] = tolower(correctAnswer[i]);
+
+            if (strcmp(correctAnswer, trimmedUserAnswer) == 0)
             {
                 printf("Correct answer!\n");
                 fclose(file);
@@ -574,7 +575,6 @@ int checkAnswer(const char userAnswer[], int questionLineNumber)
     printf("Answer not found.\n");
     return -1;
 }
-
 void quizing(char username[])
 {
     int totalLines = howmanyline("questions.txt");
@@ -594,9 +594,8 @@ void quizing(char username[])
         return;
     }
 
-    int result = 0;                                    // Initialize result to track the score
-    int successive = 0;                                // Initialize successive to track bonus streak
-    int usernameLine = checker(username, "users.txt"); // Get the line number of the username in users.txt
+    int result = 0;     // Initialize result to track the score
+    int successive = 0; // Initialize successive to track bonus streak
 
     for (int i = 0; i < numQuestions; i++)
     {
@@ -621,32 +620,48 @@ void quizing(char username[])
                 tempQ[strcspn(tempQ, "\n")] = '\0';
                 system("clear");
                 printf("Your question is: %s\n", tempQ);
+                fclose(file); // Close the file after getting the question
                 break;
             }
             lineNumber++;
         }
-        fclose(file);
 
         // Ask for user's answer
         char userAnswer[MAX_ANSWER_LENGTH];
         printf("Your answer: ");
-        scanf("%s", userAnswer); // Get the user's answer
+        scanf("%s", userAnswer);
 
         // Check the answer immediately and update the score
-        int answerStatus = checkAnswer(userAnswer, line);
-        if (answerStatus == 1)
-        {
-            scoreCalculator('Y', &result, &successive, usernameLine);
-        }
+        int answerStatus = checkAnswer(userAnswer, lineNumber);
+        scoreCalculator(answerStatus, &result, &successive);
+
+        // Display the result of the current question
+        if (answerStatus)
+            printf("Correct answer!\n");
         else
-        {
-            scoreCalculator('N', &result, &successive, usernameLine);
-        }
+            printf("Wrong answer. The correct answer is: %s\n", userAnswer);
+
+        // Pause before moving to the next question
+        printf("Press Enter to continue...");
+        while (getchar() != '\n')
+            ; // Clear input buffer
+
+        system("clear"); // Clear the screen before the next question
     }
 
     printf("Quiz completed! Your final score is: %d\n", result);
-}
 
+    // Store the score in scores.txt
+    FILE *scoresFile = fopen("scores.txt", "a"); // Append mode to add new score at the end
+    if (scoresFile == NULL)
+    {
+        printf("Error opening scores file.\n");
+        return;
+    }
+
+    fprintf(scoresFile, "%s %d\n", username, result);
+    fclose(scoresFile);
+}
 
 int userpassdeleter(char u[])
 {
