@@ -12,20 +12,40 @@
 #include <stdbool.h>
 #include <time.h>
 #include <unistd.h>
+#include<ctype.h>
 
 int MAXUSERS=1000;
 #define MAX_QUESTION_LENGTH 500
 #define MAX_ANSWER_LENGTH 500
-
+#define MAX_USERNAME_LENGTH 50
+#define MAX_ENTRIES 100
 char answer[MAX_ANSWER_LENGTH];
+#define LEADERBOARD_FILE "leaderboard.txt"
+
+
+typedef struct
+{
+    char username[MAX_USERNAME_LENGTH];
+    int numQuestions;
+    int correctAnswers;
+    float finalScore;
+} UserScore;
+
 typedef struct user
 {
     char username[32];
     char password[32];
-    int score;
+    UserScore userScore;
     int id;
 } user;
-
+struct LeaderboardEntry
+{
+    char username[MAX_USERNAME_LENGTH];
+    int sessionNumber;
+    int totalQuestionsAnswered;
+    float score;
+    int rank;
+};
 void greeting()
 {
 printf("Press Enter to sign up or 'l' to log in: ");
@@ -65,6 +85,7 @@ int checker(char u[], const char filename[])
     fclose(file);
     return -2;
 }
+
 int findlinenumber(char valuetochek[], const char filename[])
 {
 
@@ -90,6 +111,7 @@ int findlinenumber(char valuetochek[], const char filename[])
     }
     return -1;
 }
+
 int spisifiedlinecheck(char tochek[], int lineN, const char filename[])
 {
 
@@ -128,6 +150,7 @@ int spisifiedlinecheck(char tochek[], int lineN, const char filename[])
         return 0; // String not found in the file
     }
 }
+
 int usernamevalidation(user *p, char username[])
 {
     for (int i = 0; i < MAXUSERS; i++)
@@ -141,6 +164,7 @@ int usernamevalidation(user *p, char username[])
 
     return 0;
 }
+
 int passwordvalidation(char p[])
 {
 
@@ -206,6 +230,7 @@ int passwordvalidation(char p[])
     }
     return 1;
 }
+
 int addinstruct(user *p, int id, char password[], char username[])
 {
 
@@ -244,6 +269,7 @@ int addinstruct(user *p, int id, char password[], char username[])
 
     return 1;
 }
+
 int login(user *p, char username[], char password[])
 {
     int Uline = 0, tryes = 1;
@@ -313,6 +339,7 @@ int login(user *p, char username[], char password[])
         }
     }
 }
+
 int findidforenw(user *p)
 {
 
@@ -324,6 +351,7 @@ int findidforenw(user *p)
         }
     }
 }
+
 int signup(user *ptr, char u[], char p[])
 {
     int tries = 4;
@@ -426,6 +454,7 @@ int deletee(const char filename[], char valuetoD[])
         }
     }
 }
+
 int edit(const char filename[], char valuetoD[], char newvalue[])
 {
 
@@ -464,6 +493,7 @@ int edit(const char filename[], char valuetoD[], char newvalue[])
         }
     }
 }
+
 int howmanyline(const char filename[])
 {
     int lines = 0;
@@ -501,166 +531,245 @@ void stopwatch(int minutes)
     printf("\rTime is up! \n");
 }
 
-int scoreCalculator(char answerStatus, int *result, int *successive)
+void trimWhitespace(char *str)
 {
-    // Check if the answer is correct or not
-    if (answerStatus == 'Y' || answerStatus == 'y')
-    {
-        *result += 1;     // Increment score for correct answer
-        *successive += 1; // Increment successive counter
-        printf("Correct answer!\n");
+    char *start = str;
+    char *end;
 
-        // Check for successive bonus
-        if (*successive == 3)
-        {
-            *result += 5; // Apply a bonus for answering 3 questions correctly in a row
-            printf("Three in a row! Bonus points added.\n");
-        }
-    }
-    else
-    {
-        *successive = 0; // Reset successive bonus if answer is incorrect
-        printf("Incorrect answer.\n");
+    // Trim leading whitespace
+    while (isspace((unsigned char)*start))
+        start++;
+
+    if (*start == 0)
+    { // All spaces?
+        str[0] = '\0';
+        return;
     }
 
-    return *result;
+    // Trim trailing whitespace
+    end = start + strlen(start) - 1;
+    while (end > start && isspace((unsigned char)*end))
+        end--;
+
+    // Write new null terminator
+    *(end + 1) = '\0';
+
+    // Shift trimmed string back to the original pointer
+    if (start != str)
+    {
+        memmove(str, start, (end - start + 2)); // Include null terminator
+    }
 }
 
-int checkAnswer(const char userAnswer[], int questionLineNumber)
+void toLowerCase(char *str)
 {
-    FILE *file = fopen("answers.txt", "r");
+    for (; *str; str++)
+    {
+        *str = tolower((unsigned char)*str);
+    }
+}
+
+int checkAnswer(const char userAnswer[], const char correctAnswer[])
+{
+    char trimmedUserAnswer[MAX_ANSWER_LENGTH];
+    strncpy(trimmedUserAnswer, userAnswer, MAX_ANSWER_LENGTH);
+    trimmedUserAnswer[MAX_ANSWER_LENGTH - 1] = '\0'; // Ensure null-termination
+    trimWhitespace(trimmedUserAnswer);
+
+    char trimmedCorrectAnswer[MAX_ANSWER_LENGTH];
+    strncpy(trimmedCorrectAnswer, correctAnswer, MAX_ANSWER_LENGTH);
+    trimmedCorrectAnswer[MAX_ANSWER_LENGTH - 1] = '\0'; // Ensure null-termination
+    trimWhitespace(trimmedCorrectAnswer);
+
+    // Convert both answers to lowercase for case-insensitive comparison
+    toLowerCase(trimmedUserAnswer);
+    toLowerCase(trimmedCorrectAnswer);
+
+    return strcmp(trimmedCorrectAnswer, trimmedUserAnswer) == 0;
+}
+
+float scoreCalculator(int correctCount, int totalQuestions)
+{
+    float score = ((float)correctCount / totalQuestions) * 100;
+    return score;
+}
+
+void updateRankings()
+{
+    FILE *file = fopen(LEADERBOARD_FILE, "r+");
     if (file == NULL)
     {
-        printf("Error opening answers file.\n");
-        return -1;
+        printf("Error opening leaderboard file.\n");
+        return;
     }
 
-    char correctAnswer[MAX_ANSWER_LENGTH];
-    int currentLineNumber = 1;
+    struct LeaderboardEntry entries[100]; // Assuming a maximum of 100 entries
+    int numEntries = 0;
 
-    while (fgets(correctAnswer, sizeof(correctAnswer), file) != NULL)
+    // Read entries from the leaderboard file
+    while (fscanf(file, "%s %d %d %f %d", entries[numEntries].username, &entries[numEntries].sessionNumber,
+                  &entries[numEntries].totalQuestionsAnswered, &entries[numEntries].score, &entries[numEntries].rank) != EOF)
     {
-        if (currentLineNumber == questionLineNumber)
+        numEntries++;
+    }
+
+    // Calculate rankings based on total questions answered and score
+    for (int i = 0; i < numEntries; i++)
+    {
+        entries[i].rank = 1; // Initialize rank to 1
+        for (int j = 0; j < numEntries; j++)
         {
-            // Remove newline character from correctAnswer
-            correctAnswer[strcspn(correctAnswer, "\n")] = '\0';
-
-            // Trim leading and trailing whitespace from userAnswer
-            char trimmedUserAnswer[MAX_ANSWER_LENGTH];
-            sscanf(userAnswer, " %499[^\n]", trimmedUserAnswer);
-
-            // Convert both answers to lowercase for case-insensitive comparison
-            for (int i = 0; trimmedUserAnswer[i]; i++)
-                trimmedUserAnswer[i] = tolower(trimmedUserAnswer[i]);
-            for (int i = 0; correctAnswer[i]; i++)
-                correctAnswer[i] = tolower(correctAnswer[i]);
-
-            if (strcmp(correctAnswer, trimmedUserAnswer) == 0)
+            if (i != j && entries[i].totalQuestionsAnswered < entries[j].totalQuestionsAnswered)
             {
-                printf("Correct answer!\n");
-                fclose(file);
-                return 1;
+                entries[i].rank++;
             }
-            else
+            else if (i != j && entries[i].totalQuestionsAnswered == entries[j].totalQuestionsAnswered && entries[i].score < entries[j].score)
             {
-                printf("Wrong answer. The correct answer is: %s\n", correctAnswer);
-                fclose(file);
-                return 0;
+                entries[i].rank++;
             }
         }
-        currentLineNumber++;
+    }
+
+    // Update the leaderboard file with updated rankings
+    rewind(file); // Move file pointer to the beginning
+    for (int i = 0; i < numEntries; i++)
+    {
+        fprintf(file, "%s %d %d %.2f %d\n", entries[i].username, entries[i].sessionNumber,
+                entries[i].totalQuestionsAnswered, entries[i].score, entries[i].rank);
     }
 
     fclose(file);
-    printf("Answer not found.\n");
-    return -1;
 }
-void quizing(char username[])
+
+void updateLeaderboard(const char *username, int sessionNumber, int totalQuestions, float score)
 {
-    int totalLines = howmanyline("questions.txt");
-    if (totalLines <= 0)
+    FILE *file = fopen(LEADERBOARD_FILE, "a");
+    if (file == NULL)
     {
-        printf("Error reading file or file is empty.\n");
+        printf("Error opening leaderboard file.\n");
         return;
     }
 
-    srand(time(NULL)); // Seed the random number generator
+    fprintf(file, "%s %d %d %.2f\n", username, sessionNumber, totalQuestions, score);
+    fclose(file);
+}
+
+void quizUser(const char *username)
+{
     int numQuestions;
-    printf("How many questions would you like to answer? ");
+    system("clear");
+    printf("How many questions do you want to answer? ");
     scanf("%d", &numQuestions);
-    if (numQuestions <= 0)
+    getchar(); // Consume newline character
+
+    FILE *questionsFile = fopen("questions.txt", "r");
+    if (questionsFile == NULL)
     {
-        printf("Invalid number of questions.\n");
+        printf("Error opening questions file.\n");
         return;
     }
 
-    int result = 0;     // Initialize result to track the score
-    int successive = 0; // Initialize successive to track bonus streak
+    FILE *answersFile = fopen("answers.txt", "r");
+    if (answersFile == NULL)
+    {
+        printf("Error opening answers file.\n");
+        fclose(questionsFile);
+        return;
+    }
+
+    char question[MAX_QUESTION_LENGTH];
+    char userAnswer[MAX_ANSWER_LENGTH];
+    char correctAnswer[MAX_ANSWER_LENGTH];
+    int correctCount = 0;
+
+    // Seed random number generator
+    srand(time(NULL));
 
     for (int i = 0; i < numQuestions; i++)
     {
-        int line = rand() % totalLines + 1; // Random line number between 1 and totalLines
-
-        char tempQ[MAX_QUESTION_LENGTH];
-        int lineNumber = 1;
-
-        FILE *file = fopen("questions.txt", "r");
-        if (file == NULL)
+        // Read the question from questions.txt
+        if (fgets(question, sizeof(question), questionsFile) == NULL)
         {
-            printf("Error opening questions file.\n");
+            printf("Error reading question.\n");
+            fclose(questionsFile);
+            fclose(answersFile);
             return;
         }
 
-        // Read questions and display the random one
-        while (fgets(tempQ, sizeof(tempQ), file) != NULL)
+        // Remove newline character from question
+        question[strcspn(question, "\n")] = '\0';
+        system("clear");
+        printf("Question %d: %s\n", i + 1, question);
+        
+        printf("Your answer: ");
+        scanf(" %[^\n]", userAnswer);
+
+        // Read the correct answer from answers.txt using line number from questions.txt
+        if (fgets(correctAnswer, sizeof(correctAnswer), answersFile) == NULL)
         {
-            if (lineNumber == line)
-            {
-                // Remove newline character from tempQ
-                tempQ[strcspn(tempQ, "\n")] = '\0';
-                system("clear");
-                printf("Your question is: %s\n", tempQ);
-                fclose(file); // Close the file after getting the question
-                break;
-            }
-            lineNumber++;
+            printf("Error reading answer.\n");
+            fclose(questionsFile);
+            fclose(answersFile);
+            return;
         }
 
-        // Ask for user's answer
-        char userAnswer[MAX_ANSWER_LENGTH];
-        printf("Your answer: ");
-        scanf("%s", userAnswer);
+        // Check if the user's answer matches the correct answer
+        trimWhitespace(correctAnswer); // Remove leading/trailing whitespace from correct answer
+        trimWhitespace(userAnswer);    // Remove leading/trailing whitespace from user's answer
+        toLowerCase(correctAnswer);    // Convert correct answer to lowercase
+        toLowerCase(userAnswer);       // Convert user's answer to lowercase
 
-        // Check the answer immediately and update the score
-        int answerStatus = checkAnswer(userAnswer, lineNumber);
-        scoreCalculator(answerStatus, &result, &successive);
-
-        // Display the result of the current question
-        if (answerStatus)
+        if (strcmp(correctAnswer, userAnswer) == 0)
+        {
             printf("Correct answer!\n");
+            correctCount++;
+        }
         else
-            printf("Wrong answer. The correct answer is: %s\n", userAnswer);
+        {
+            printf("Wrong answer. The correct answer is: %s\n", correctAnswer);
+        }
 
-        // Pause before moving to the next question
-        printf("Press Enter to continue...");
-        while (getchar() != '\n')
-            ; // Clear input buffer
-
-        system("clear"); // Clear the screen before the next question
+        printf("\n");
     }
 
-    printf("Quiz completed! Your final score is: %d\n", result);
+    fclose(questionsFile);
+    fclose(answersFile);
 
-    // Store the score in scores.txt
-    FILE *scoresFile = fopen("scores.txt", "a"); // Append mode to add new score at the end
-    if (scoresFile == NULL)
-    {
-        printf("Error opening scores file.\n");
-        return;
-    }
+    // Calculate and display the final score
+    float finalScore = scoreCalculator(correctCount, numQuestions);
+    system("clear");
+    printf("You answered %d out of %d questions correctly.\n", correctCount, numQuestions);
+    printf("Your final score is: %.2f%%\n", finalScore);
 
-    fprintf(scoresFile, "%s %d\n", username, result);
-    fclose(scoresFile);
+    // Update the leaderboard with the current session results
+    updateLeaderboard(username, 1, numQuestions, finalScore);
+    updateRankings();
+}
+
+void displayLeaderboard(){
+    FILE *file = fopen(LEADERBOARD_FILE, "r");
+if (file == NULL)
+{
+    printf("Error opening leaderboard file.\n");
+    return;
+}
+
+struct LeaderboardEntry entry;
+int rank = 1; // Initialize rank to 1
+
+printf("\nLeaderboard:\n");
+printf("Rank | Username       | Session | Questions Answered | Score\n");
+printf("---------------------------------------------------------\n");
+
+// Read entries from the leaderboard file and calculate ranks
+while (fscanf(file, "%s %d %d %f", entry.username, &entry.sessionNumber, &entry.totalQuestionsAnswered, &entry.score) != EOF)
+{
+    float percentage = (entry.score / (float)(entry.totalQuestionsAnswered * 100)) * 100.0f; // Calculate percentage
+    printf("%-4d | %-15s | %-7d | %-18d | %.2f%%\n", rank, entry.username, entry.sessionNumber, entry.totalQuestionsAnswered, percentage);
+    rank++; // Increment rank for the next entry
+}
+
+fclose(file);
 }
 
 int userpassdeleter(char u[])
@@ -690,6 +799,7 @@ int userpassdeleter(char u[])
         }
     } while (fscanf(fpp, "%s", temppass) != 0);
 }
+
 int printer(const char filename[])
 
 {
@@ -705,6 +815,7 @@ int printer(const char filename[])
         fprintf(stdout, "%s", buffer);
     }
 }
+
 int loginusingstruct(user *p, int id)
 {
     int triesLeft = 4;
@@ -736,6 +847,7 @@ int loginusingstruct(user *p, int id)
 
     return 0;
 }
+
 void deleteuserS(user *p, int id)
 {
     if ((p + id)->id != 0)
@@ -743,7 +855,7 @@ void deleteuserS(user *p, int id)
         (p + id)->id = 0;
         strcpy((p + id)->username, "0");
         strcpy((p + id)->password, "0");
-        (p + id)->score = 0;
+        (p + id)->userScore.finalScore = 0;
         printf("User deleted successfully.\n");
     }
     else
@@ -751,6 +863,7 @@ void deleteuserS(user *p, int id)
         printf("User with ID %d not found.\n", id);
     }
 }
+
 void edituserS(user *p, int id)
 {
     if ((p + id)->id != 0)
@@ -779,6 +892,7 @@ void edituserS(user *p, int id)
         printf("User with ID %d not found.\n", id);
     }
 }
+
 int userid(user *p, char username[], int maxusers)
 {
     for (int i = 0; i < MAXUSERS; i++)
@@ -790,6 +904,7 @@ int userid(user *p, char username[], int maxusers)
     }
     return -1;
 }
+
 int fileloader(const char filename[], user **ptr, int *maxUsers)
 {
     FILE *file = fopen(filename, "r");
@@ -833,7 +948,10 @@ int fileloader(const char filename[], user **ptr, int *maxUsers)
         }
         else if (strstr(filename, "scores"))
         {
-            (*ptr)[count].score = atoi(buffer); // Convert string to integer
+            sscanf(buffer, "Username: %s, Questions Answered: %d, Correct Answers: %d, Final Score: %f%%",
+                   &(*ptr)[count].username, &(*ptr)[count].userScore.numQuestions, &(*ptr)[count].userScore.correctAnswers, &(*ptr)[count].userScore.finalScore);
+            count++;
+        
         }
 
         (*ptr)[count].id = count + 1; // Assign unique ID
@@ -848,73 +966,67 @@ int fileloader(const char filename[], user **ptr, int *maxUsers)
 int loginstructv2(user *ptr, char username[], char password[], int MAXUSERS)
 {
     int triesLeft = 4;
-    int userExists = 0;
-    int id = -1;
-    int isAdmin = 0; // Flag to track if admin signed in
+    int userId = -1; // Store the ID of the user if found
 
     while (triesLeft > 0)
     {
         printf("Please enter username: ");
-        scanf("%s",username);
+        scanf("%s", username);
 
+        // Search for the username in the user array
         for (int i = 0; i < MAXUSERS; i++)
         {
-            if (strcmp((ptr + i)->username, username) == 0)
+            if (strcmp(ptr[i].username, username) == 0)
             {
-                userExists = 1;
-                id = i;
-
-                
-                if (strcmp(username,"admin") == 0 )
-                {
-                    printf("Username found. Please enter password: ");
-                    scanf("%s", password);
-                    if (strcmp((ptr+i)->password, password) == 0)
-                    {
-                        
-                        isAdmin = 1;
-                        break;
-                    }
-                    
-                    
-                }
-
+                userId = i; // Store the ID of the user
                 break;
             }
         }
 
-        if (!userExists)
+        if (strcmp(username, "admin") == 0)
         {
-            triesLeft--;
-            printf("Username not found. Tries left: %d\n", triesLeft);
-            continue;
+            printf("Username found. Please enter admin password: ");
+            scanf("%s", password);
+
+            // Compare the entered password with the admin's password
+            if (strcmp("adminpassword", password) == 0)
+            {
+                printf("Admin login successful!\n");
+                return 9; // Return 9 for admin login
+            }
+            else
+            {
+                triesLeft--;
+                printf("Invalid admin password. Tries left: %d\n", triesLeft);
+            }
         }
+        else if (userId != -1)
+        { // Regular user login
+            printf("Username found. Please enter password: ");
+            scanf("%s", password);
 
-        if (isAdmin) // Admin signed in
-        {
-            return 9; // Unique value for admin
-        }
-
-        printf("Username found. Please enter password: ");
-        scanf("%s", password);
-
-        if (strcmp((ptr + id)->password, password) == 0)
-        {
-            return 1; // Username and password match
+            // Compare the entered password with the user's password
+            if (strcmp(ptr[userId].password, password) == 0)
+            {
+                printf("User login successful!\n");
+                return 1; // Return 1 for regular user login
+            }
+            else
+            {
+                triesLeft--;
+                printf("Invalid password. Tries left: %d\n", triesLeft);
+            }
         }
         else
         {
             triesLeft--;
-            printf("Invalid password. Tries left: %d\n", triesLeft);
+            printf("Username not found. Tries left: %d\n", triesLeft);
         }
     }
 
     printf("No more tries left. Exiting...\n");
-    return -1;
+    return -1; // Return -1 for failed login attempts
 }
-
-
-
 int main()
 {
         int result = 0;
@@ -930,6 +1042,15 @@ int main()
         fileloader("users.txt", &p, &MAXUSERS);
         fileloader("passwords.txt", &p, &MAXUSERS);
         fileloader("scores.txt", &p, &MAXUSERS);
+        printf("Loaded users with scores.\n");
+
+        // Print loaded users with scores for demonstration
+        for (int i = 0; i < MAXUSERS; i++)
+        {
+            printf("User %d - Username: %s, Questions Answered: %d, Correct Answers: %d, Final Score: %.2f%%\n",
+                   users[i].id, users[i].username, users[i].userScore.numQuestions,
+                   users[i].userScore.correctAnswers, users[i].userScore.finalScore);
+        }
 
         scanf("%c", &choice);
         if (choice == '\n') // Changed 'n' to '\n' for signup
@@ -953,7 +1074,8 @@ int main()
             {
                 printf("Login successful!\n");
 
-                quizing(username);
+                quizUser(username);
+                displayLeaderboard();
                 // Proceed with actions after login...
             }else if (s == 9)
             {
