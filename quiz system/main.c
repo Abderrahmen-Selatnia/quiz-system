@@ -1316,6 +1316,65 @@ void printinfile(const char *filename)
     fclose(file);
 }
 
+int editQuestionOrAnswer(const char *filename, const char *associatedFilename, int lineNumber, const char *type)
+{
+    return editByLineNumber(filename, lineNumber);
+}
+
+void editAnswerorQuestion()
+{
+    while (1)
+    {
+        char choice[2];
+        printf("Enter 'q' to edit question, 'a' to edit answer, or 'e' to exit: ");
+        scanf(" %1[^\n]", choice); // Read only one character
+
+        if (choice[0] == 'q' || choice[0] == 'Q')
+        {
+            printf("Enter the line number: ");
+            int lineNumber;
+            scanf("%d", &lineNumber);
+            getchar(); // Consume newline character
+            if (editQuestionOrAnswer("questions.txt", "answers.txt", lineNumber, "answer") == 1)
+            {
+                printf("Do you want to edit the associated answer? (y/n): ");
+                char editChoice;
+                scanf(" %c", &editChoice);
+                if (editChoice == 'y' || editChoice == 'Y')
+                {
+                    editByLineNumber("answers.txt", lineNumber);
+                }
+            }
+        }
+        else if (choice[0] == 'a' || choice[0] == 'A')
+        {
+            printf("Enter the line number: ");
+            int lineNumber;
+            scanf("%d", &lineNumber);
+            getchar(); // Consume newline character
+            if (editQuestionOrAnswer("answers.txt", "questions.txt", lineNumber, "question") == 1)
+            {
+                printf("Do you want to edit the associated question? (y/n): ");
+                char editChoice;
+                scanf(" %c", &editChoice);
+                if (editChoice == 'y' || editChoice == 'Y')
+                {
+                    editByLineNumber("questions.txt", lineNumber);
+                }
+            }
+        }
+        else if (choice[0] == 'e' || choice[0] == 'E')
+        {
+            printf("Exiting...\n");
+            break;
+        }
+        else
+        {
+            printf("Invalid choice.\n");
+        }
+    }
+}
+
 
 void adminMenu()
 {
@@ -1361,7 +1420,7 @@ void adminMenu()
             printinfile("answers.txt");
             break;
         case '6':
-            editAnswerQuestion();
+            editAnswerorQuestion();
             break;
         case '7':
 
