@@ -647,6 +647,8 @@ void quizUser(const char *username)
 
 void displayLeaderboard()
 {
+    system("clear");
+    printf("this is the leader bord");
     FILE *file = fopen(LEADERBOARD_FILE, "r");
     if (file == NULL)
     {
@@ -1379,10 +1381,10 @@ void editAnswerorQuestion()
 void adminMenu()
 {
     char choice;
-
+    system("clear");
     do
     {
-        system("clear");
+        
         printf("\nAdmin Menu:\n");
         printf("1. Add user\n");
         printf("2. Delete user\n");
@@ -1398,34 +1400,42 @@ void adminMenu()
         switch (choice)
         {
         case '1':
+            system("clear");
             fileloader(&p, &MAXUSERS);
             signUp(p, MAXUSERS);
+            
             break;
         case '2':
+            system("clear");
             printf("please enter the username of the user");
             scanf("%s", username);
             deleteUser(username);
+            
             break;
         case '3':
-            
+            system("clear");
             printf("please enter the question you want to add:\n>");
             printinfile("questions.txt");
             break;
         case '4':
+            system("clear");
+            printf("this is the leader bord:");
+            displayLeaderboard();
             
             break;
         case '5':
-            
+            system("clear");
             printf("please enter the answer :\n>");
             printinfile("answers.txt");
             break;
         case '6':
+            system("clear");
             editAnswerorQuestion();
             break;
         case '7':
+            system("clear");
+            printf("this is the leader bord:");
 
-            displayLeaderboard();
-        
             break;
         case 'q':
             break;
