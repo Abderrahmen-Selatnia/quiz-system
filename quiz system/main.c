@@ -45,37 +45,12 @@ struct LeaderboardEntry
     float score;
     int rank;
 }entry;
-void greeting()
-{
-printf("Press Enter to sign up or 'l' to log in: ");
-}
+
+
+
+
 user *p;
 char username[50], password[50];
-int checker(const char *filename, char value[])
-{
-    FILE *file = fopen(filename, "r");
-    if (file == NULL)
-    {
-        printf("Error opening file: %s\n", filename);
-        return -1;
-    }
-
-    char line[100];
-    int lineNumber = 0;
-    while (fgets(line, sizeof(line), file))
-    {
-        line[strcspn(line, "\n")] = '\0'; // Remove newline character
-        if (strcmp(line, value) == 0)
-        {
-            fclose(file);
-            return lineNumber;
-        }
-        lineNumber++;
-    }
-
-    fclose(file);
-    return -1; // Not found
-}
 
 int findlinenumber(char valuetochek[], const char filename[])
 {
@@ -102,19 +77,6 @@ int findlinenumber(char valuetochek[], const char filename[])
     }
     return -1;
 }
-
-bool hasSpace(char str[])
-{
-    for (int i = 0; str[i] != '\0'; i++)
-    {
-        if (str[i] == ' ')
-        {
-            return true; // Found a space character
-        }
-    }
-    return false; // No space character found
-}
-
 int spisifiedlinecheck(char tochek[], int lineN, const char filename[])
 {
 
@@ -153,79 +115,6 @@ int spisifiedlinecheck(char tochek[], int lineN, const char filename[])
         return 0; // String not found in the file
     }
 }
-
-int passwordvalidation(char p[])
-{
-    bool hasnumber = false;
-    bool hasspecialcharacter = false;
-    bool haslowercharcter = false;
-    bool neededlength = false;
-    bool hasasymbole = false;
-   
-
-    int length = strlen(p); // Calculate the length once
-
-    if (length >= 8)
-    {
-        neededlength = true;
-    }
-
-    for (int i = 0; i < length; i++)
-    {
-       
-        if (isupper(p[i]))
-        {
-            hasspecialcharacter = true;
-        }
-        if (islower(p[i]))
-        {
-            haslowercharcter = true;
-        }
-        if (isdigit(p[i]))
-        {
-            hasnumber = true;
-        }
-        if (ispunct(p[i]))
-        {
-            hasasymbole = true;
-        }
-    }
-
-    if(hasSpace(p)){
-        printf("no spases are allowed");
-        
-    }
-    if (!neededlength)
-    {
-        printf("* Password must be at least 8 characters long *\n");
-    }
-    if (!hasasymbole)
-    {
-        printf("* Your password must have a symbol *\n");
-    }
-    if (!haslowercharcter)
-    {
-        printf("* Your password must have a lowercase character *\n");
-    }
-    if (!hasspecialcharacter)
-    {
-        printf("* Your password must have an uppercase letter *\n");
-    }
-    if (!hasnumber)
-    {
-        printf("* Your password must have a number *\n");
-    }
-
-    if (!hasSpace(p) && hasspecialcharacter && haslowercharcter && neededlength && hasasymbole)
-    {
-        return 1; // All criteria met
-    }
-    else
-    {
-        return 0; // Criteria not met
-    }
-}
-
 int findidforenw(user *p)
 {
 
@@ -237,7 +126,6 @@ int findidforenw(user *p)
         }
     }
 }
-
 int signup(user *ptr, char u[], char p[])
 {
     int tries = 4;
@@ -315,7 +203,6 @@ int signup(user *ptr, char u[], char p[])
 
     return 1;
 }
-
 int deletee(const char filename[], char valuetoD[])
 {
     const char tempfile[15];
@@ -353,7 +240,6 @@ int deletee(const char filename[], char valuetoD[])
         }
     }
 }
-
 int edit(const char filename[], char valuetoD[], char newvalue[])
 {
 
@@ -392,6 +278,329 @@ int edit(const char filename[], char valuetoD[], char newvalue[])
         }
     }
 }
+void stopwatch(int minutes)
+{
+    int seconds = minutes * 60;
+    while (seconds > 0)
+    {
+        printf("\r                                           Time remaining: %02d:%02d", seconds / 60, seconds % 60);
+        fflush(stdout);
+        sleep(1);
+        seconds--;
+    }
+    printf("\rTime is up! \n");
+}
+int checkAnswer(const char userAnswer[], const char correctAnswer[])
+{
+    char trimmedUserAnswer[MAX_ANSWER_LENGTH];
+    strncpy(trimmedUserAnswer, userAnswer, MAX_ANSWER_LENGTH);
+    trimmedUserAnswer[MAX_ANSWER_LENGTH - 1] = '\0'; // Ensure null-termination
+    trimWhitespace(trimmedUserAnswer);
+
+    char trimmedCorrectAnswer[MAX_ANSWER_LENGTH];
+    strncpy(trimmedCorrectAnswer, correctAnswer, MAX_ANSWER_LENGTH);
+    trimmedCorrectAnswer[MAX_ANSWER_LENGTH - 1] = '\0'; // Ensure null-termination
+    trimWhitespace(trimmedCorrectAnswer);
+
+    // Convert both answers to lowercase for case-insensitive comparison
+    toLowerCase(trimmedUserAnswer);
+    toLowerCase(trimmedCorrectAnswer);
+
+    return strcmp(trimmedCorrectAnswer, trimmedUserAnswer) == 0;
+}
+int userpassdeleter(char u[])
+{
+    int Uline;
+    char temppass[40];
+    int line = 1;
+    Uline = checker(u, "users.txt");
+
+    FILE *fpp = fopen("password.txt", "r");
+    if (fpp == NULL)
+    {
+        printf("could not open file ");
+        return -1;
+    }
+
+    do
+    {
+
+        if (Uline == line)
+        {
+            deletee("paswwords.txt", temppass);
+        }
+        else
+        {
+            line++;
+        }
+    } while (fscanf(fpp, "%s", temppass) != 0);
+}
+int printer(const char filename[])
+
+{
+    char buffer[50];
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        printf("error opning file ");
+    }
+
+    while (fscanf(file, "%s", buffer) != 0)
+    {
+        fprintf(stdout, "%s", buffer);
+    }
+}
+int loginusingstruct(user *p, int id)
+{
+    int triesLeft = 4;
+    char password[20];
+
+    do
+    {
+        printf("Enter password (you have %d tries left): ", triesLeft);
+        scanf("%s", password);
+
+        if (strcmp((p + id)->password, password) == 0)
+        {
+            printf("Login successful!\n");
+            return 1;
+        }
+        else
+        {
+            printf("Incorrect password. ");
+            triesLeft--;
+        }
+
+        if (triesLeft == 0)
+        {
+            printf("You have no tries left. Exiting...\n");
+            return 0;
+        }
+
+    } while (triesLeft > 0);
+
+    return 0;
+}
+int userid(user *p, char username[], int maxusers)
+{
+    for (int i = 0; i < MAXUSERS; i++)
+    {
+        if (strcmp((p + i)->username, username) == 0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+int editAnswer(const char *filename, int lineNumber, const char *newAnswer)
+{
+    FILE *file = fopen(filename, "r");
+    FILE *tempFile = fopen("temp_answers.txt", "w");
+
+    if (file == NULL || tempFile == NULL)
+    {
+        printf("Error opening files.\n");
+        return -1;
+    }
+
+    char buffer[256];
+    int currentLine = 0;
+
+    while (fgets(buffer, sizeof(buffer), file) != NULL)
+    {
+        currentLine++;
+        if (currentLine != lineNumber)
+        {
+            fprintf(tempFile, "%s", buffer);
+        }
+        else
+        {
+            fprintf(tempFile, "%s\n", newAnswer);
+        }
+    }
+
+    fclose(file);
+    fclose(tempFile);
+
+    remove(filename);
+    rename("temp_answers.txt", filename);
+
+    printf("Answer edited successfully.\n");
+
+    return 0;
+}
+int editQuestion()
+{
+    char choice[2];
+    int validChoice = 0;
+
+    printf("Enter 'n' to choose by line number or 's' to choose by substring: ");
+    scanf(" %1[^\n]", choice); // Read only one character
+
+    if (choice[0] == 'n' || choice[0] == 'N')
+    {
+        int lineNumber;
+        printf("Enter the line number: ");
+        scanf("%d", &lineNumber);
+        getchar(); // Consume newline character
+        if (lineNumber <= 0)
+        {
+            printf("Invalid line number.\n");
+            return -1;
+        }
+        return editByLineNumber("questions.txt", lineNumber);
+    }
+    else if (choice[0] == 's' || choice[0] == 'S')
+    {
+        char searchStr[256];
+        printf("Enter a substring: ");
+        scanf(" %[^\n]", searchStr); // Read the entire line including spaces
+
+        int lineNumber = checker(searchStr, "questions.txt");
+        if (lineNumber <= 0)
+        {
+            printf("No matching line found.\n");
+            return -1;
+        }
+        return editByLineNumber("questions.txt", lineNumber);
+    }
+    else
+    {
+        printf("Invalid choice.\n");
+        return -1;
+    }
+}
+
+
+void greeting(const char *title)
+{
+    printf("\033[0;32m");
+    printf("░░▒█░░▒█░░▒█▀▀▀░░▒█░░░░░▒█▀▀▄░░▒█▀▀▀█░░▒█▀▄▀█░░░░▀▀█▀▀░░▒█▀▀▀█▒░░\n");
+    printf("░░▒█▒█▒█░░▒█▀▀▀░░▒█░░░░░▒█░░░░░▒█░░▒█░░▒█▒█▒█░░░░░▒█░░░░▒█░░▒█▒░░\n");
+    printf("░░▒▀▄▀▄▀░░▒█▄▄▄░░▒█▄▄█░░▒█▄▄▀░░▒█▄▄▄█░░▒█░░▒█░░░░░▒█░░░░▒█▄▄▄█▒░░\n");
+    printf("░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\n");
+    printf("░▒█▀▀█░▒█░▒█░▀█▀░▒█▀▀▀█░░░▒█▀▀▀█░▒█░░▒█░▒█▀▀▀█░▀▀█▀▀░▒█▀▀▀░▒█▀▄▀█\n");
+    printf("░▒█░▒█░▒█░▒█░▒█░░░▄▄▄▀▀░░░░▀▀▀▄▄░▒▀▄▄▄▀░░▀▀▀▄▄░░▒█░░░▒█▀▀▀░▒█▒█▒█\n");
+    printf("░░▀▀█▄░░▀▄▄▀░▄█▄░▒█▄▄▄█░░░▒█▄▄▄█░░░▒█░░░▒█▄▄▄█░░▒█░░░▒█▄▄▄░▒█░░▒█\n");
+    printf("░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\n");
+    printf("░░░░░░░░░░░░░░░░░▒▓ Press |Enter| to log in ▓▒░░░░░░░░░░░░░░░░░░░\n");
+    printf("░░░░░░░░░░░╔══════════════════════════════════════╗░░░░░░░░░░░░░░\n");
+    printf("░░░░░░░░░░░║   Created by: SELATNIA ABDERRAHMEN   ║░░░░░░░░░░░░░░\n");
+    printf("░░░░░░░░░░░╚══════════════════════════════════════╝░░░░░░░░░░░░░░\n");
+    printf("░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\n");
+    printf("*****************************************************************\n");
+    printf("\033[0m");
+}
+
+int checker(const char *filename, char value[])
+{
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        printf("Error opening file: %s\n", filename);
+        return -1;
+    }
+
+    char line[100];
+    int lineNumber = 0;
+    while (fgets(line, sizeof(line), file))
+    {
+        line[strcspn(line, "\n")] = '\0'; // Remove newline character
+        if (strcmp(line, value) == 0)
+        {
+            fclose(file);
+            return lineNumber;
+        }
+        lineNumber++;
+    }
+
+    fclose(file);
+    return -1; // Not found
+}
+
+bool hasSpace(char str[])
+{
+    for (int i = 0; str[i] != '\0'; i++)
+    {
+        if (str[i] == ' ')
+        {
+            return true; // Found a space character
+        }
+    }
+    return false; // No space character found
+}
+
+int passwordvalidation(char p[])
+{
+    bool hasnumber = false;
+    bool hasspecialcharacter = false;
+    bool haslowercharcter = false;
+    bool neededlength = false;
+    bool hasasymbole = false;
+   
+
+    int length = strlen(p); // Calculate the length once
+
+    if (length >= 8)
+    {
+        neededlength = true;
+    }
+
+    for (int i = 0; i < length; i++)
+    {
+       
+        if (isupper(p[i]))
+        {
+            hasspecialcharacter = true;
+        }
+        if (islower(p[i]))
+        {
+            haslowercharcter = true;
+        }
+        if (isdigit(p[i]))
+        {
+            hasnumber = true;
+        }
+        if (ispunct(p[i]))
+        {
+            hasasymbole = true;
+        }
+    }
+
+    if(hasSpace(p)){
+        printf("no spases are allowed");
+        
+    }
+    if (!neededlength)
+    {
+        printf("* Password must be at least 8 characters long *\n");
+    }
+    if (!hasasymbole)
+    {
+        printf("* Your password must have a symbol *\n");
+    }
+    if (!haslowercharcter)
+    {
+        printf("* Your password must have a lowercase character *\n");
+    }
+    if (!hasspecialcharacter)
+    {
+        printf("* Your password must have an uppercase letter *\n");
+    }
+    if (!hasnumber)
+    {
+        printf("* Your password must have a number *\n");
+    }
+
+    if (!hasSpace(p) && hasspecialcharacter && haslowercharcter && neededlength && hasasymbole)
+    {
+        return 1; // All criteria met
+    }
+    else
+    {
+        return 0; // Criteria not met
+    }
+}
 
 int howManyLines(const char filename[])
 {
@@ -416,18 +625,6 @@ int howManyLines(const char filename[])
     return lines;
 }
 
-void stopwatch(int minutes)
-{
-    int seconds = minutes * 60;
-    while (seconds > 0)
-    {
-        printf("\r                                           Time remaining: %02d:%02d", seconds / 60, seconds % 60);
-        fflush(stdout);
-        sleep(1);
-        seconds--;
-    }
-    printf("\rTime is up! \n");
-}
 
 void trimWhitespace(char *str)
 {
@@ -465,25 +662,6 @@ void toLowerCase(char *str)
     {
         *str = tolower((unsigned char)*str);
     }
-}
-
-int checkAnswer(const char userAnswer[], const char correctAnswer[])
-{
-    char trimmedUserAnswer[MAX_ANSWER_LENGTH];
-    strncpy(trimmedUserAnswer, userAnswer, MAX_ANSWER_LENGTH);
-    trimmedUserAnswer[MAX_ANSWER_LENGTH - 1] = '\0'; // Ensure null-termination
-    trimWhitespace(trimmedUserAnswer);
-
-    char trimmedCorrectAnswer[MAX_ANSWER_LENGTH];
-    strncpy(trimmedCorrectAnswer, correctAnswer, MAX_ANSWER_LENGTH);
-    trimmedCorrectAnswer[MAX_ANSWER_LENGTH - 1] = '\0'; // Ensure null-termination
-    trimWhitespace(trimmedCorrectAnswer);
-
-    // Convert both answers to lowercase for case-insensitive comparison
-    toLowerCase(trimmedUserAnswer);
-    toLowerCase(trimmedCorrectAnswer);
-
-    return strcmp(trimmedCorrectAnswer, trimmedUserAnswer) == 0;
 }
 
 float scoreCalculator(int correctCount, int totalQuestions)
@@ -644,7 +822,6 @@ void quizUser(const char *username)
     updateRankings();
 }
 
-
 void displayLeaderboard()
 {
     system("clear");
@@ -671,94 +848,6 @@ void displayLeaderboard()
     }
 
     fclose(file);
-}
-
-int userpassdeleter(char u[])
-{
-    int Uline;
-    char temppass[40];
-    int line = 1;
-    Uline = checker(u, "users.txt");
-
-    FILE *fpp = fopen("password.txt", "r");
-    if (fpp == NULL)
-    {
-        printf("could not open file ");
-        return -1;
-    }
-
-    do
-    {
-
-        if (Uline == line)
-        {
-            deletee("paswwords.txt", temppass);
-        }
-        else
-        {
-            line++;
-        }
-    } while (fscanf(fpp, "%s", temppass) != 0);
-}
-
-int printer(const char filename[])
-
-{
-    char buffer[50];
-    FILE *file = fopen(filename, "r");
-    if (file == NULL)
-    {
-        printf("error opning file ");
-    }
-
-    while (fscanf(file, "%s", buffer) != 0)
-    {
-        fprintf(stdout, "%s", buffer);
-    }
-}
-
-int loginusingstruct(user *p, int id)
-{
-    int triesLeft = 4;
-    char password[20];
-
-    do
-    {
-        printf("Enter password (you have %d tries left): ", triesLeft);
-        scanf("%s", password);
-
-        if (strcmp((p + id)->password, password) == 0)
-        {
-            printf("Login successful!\n");
-            return 1;
-        }
-        else
-        {
-            printf("Incorrect password. ");
-            triesLeft--;
-        }
-
-        if (triesLeft == 0)
-        {
-            printf("You have no tries left. Exiting...\n");
-            return 0;
-        }
-
-    } while (triesLeft > 0);
-
-    return 0;
-}
-
-int userid(user *p, char username[], int maxusers)
-{
-    for (int i = 0; i < MAXUSERS; i++)
-    {
-        if (strcmp((p + i)->username, username) == 0)
-        {
-            return i;
-        }
-    }
-    return -1;
 }
 
 bool saveUserToFile(const char *filename, const char *data)
@@ -793,7 +882,6 @@ int authenticateUser(user *users, int maxUsers, const char *username, const char
     return -1; // Username not found
 }
 
-
 int usernamevalidation(user *p, int maxUsers,char username[])
 {
     if (hasSpace(username)){
@@ -808,6 +896,139 @@ int usernamevalidation(user *p, int maxUsers,char username[])
         }
     }
     return 0; // Username is available
+}
+
+int editAnswerQuestion()
+{
+    char choice[2];
+    int validChoice = 0;
+
+    printf("Enter 'n' to choose by line number or 's' to choose by substring: ");
+    scanf(" %1[^\n]", choice); // Read only one character
+
+    if (choice[0] == 'n' || choice[0] == 'N')
+    {
+        int lineNumber;
+        printf("Enter the line number: ");
+        scanf("%d", &lineNumber);
+        getchar(); // Consume newline character
+        if (lineNumber <= 0)
+        {
+            printf("Invalid line number.\n");
+            return -1;
+        }
+
+        char filename[20];
+        printf("Enter 'q' to edit question or 'a' to edit answer: ");
+        scanf(" %1[^\n]", choice); // Read only one character
+
+        if (choice[0] == 'q' || choice[0] == 'Q')
+        {
+            return editByLineNumber("questions.txt", lineNumber);
+        }
+        else if (choice[0] == 'a' || choice[0] == 'A')
+        {
+            return editByLineNumber("answers.txt", lineNumber);
+        }
+        else
+        {
+            printf("Invalid choice.\n");
+            return -1;
+        }
+    }
+    else if (choice[0] == 's' || choice[0] == 'S')
+    {
+        char searchStr[256];
+        printf("Enter a substring: ");
+        scanf(" %[^\n]", searchStr); // Read the entire line including spaces
+
+        // Implement checker function logic to find line number
+        int lineNumber = 1; // Assume lineNumber is found by checker function
+
+        char filename[20];
+        printf("Enter 'q' to edit question or 'a' to edit answer: ");
+        scanf(" %1[^\n]", choice); // Read only one character
+
+        if (choice[0] == 'q' || choice[0] == 'Q')
+        {
+            return editByLineNumber("questions.txt", lineNumber);
+        }
+        else if (choice[0] == 'a' || choice[0] == 'A')
+        {
+            return editByLineNumber("answers.txt", lineNumber);
+        }
+        else
+        {
+            printf("Invalid choice.\n");
+            return -1;
+        }
+    }
+    else
+    {
+        printf("Invalid choice.\n");
+        return -1;
+    }
+}
+
+int editByLineNumber(const char *filename, int lineNumber)
+{
+    FILE *file = fopen(filename, "r");
+    FILE *tempFile = fopen("temp_file.txt", "w");
+
+    if (file == NULL || tempFile == NULL)
+    {
+        printf("Error opening files.\n");
+        return -1;
+    }
+
+    char buffer[256];
+    int currentLine = 0;
+
+    while (fgets(buffer, sizeof(buffer), file) != NULL)
+    {
+        currentLine++;
+        if (currentLine != lineNumber)
+        {
+            fprintf(tempFile, "%s", buffer);
+        }
+        else
+        {
+            printf("Current content:\n%s", buffer);
+            printf("Enter 'e' to edit this or 'd' to delete it: ");
+            char choice;
+            scanf(" %c", &choice);
+
+            if (choice == 'e' || choice == 'E')
+            {
+                printf("Enter the new content: ");
+                char newContent[256];
+                getchar(); // Consume the newline left by previous scanf
+                fgets(newContent, sizeof(newContent), stdin);
+                newContent[strcspn(newContent, "\n")] = '\0'; // Remove the newline character
+                fprintf(tempFile, "%s\n", newContent);
+                printf("Edited successfully.\n");
+            }
+            else if (choice == 'd' || choice == 'D')
+            {
+                printf("Deleted successfully.\n");
+                // Skip writing this line to the temporary file
+            }
+            else
+            {
+                fprintf(tempFile, "%s", buffer); // Write the original content if invalid choice
+                printf("Invalid choice. No changes made.\n");
+            }
+        }
+    }
+
+    fclose(file);
+    fclose(tempFile);
+
+    // Replace the original file with the updated content
+    remove(filename);
+    rename("temp_file.txt", filename);
+
+    return 1; // Success
 }
 
 int login(user *users, int maxUsers,char username[],char password[])
@@ -917,222 +1138,36 @@ void deleteLine(const char *filename, int lineNumber)
     rename("temp.txt", filename);
 }
 
-int editAnswer(const char *filename, int lineNumber, const char *newAnswer)
+int deleteUser(user *users)
 {
-    FILE *file = fopen(filename, "r");
-    FILE *tempFile = fopen("temp_answers.txt", "w");
-
-    if (file == NULL || tempFile == NULL)
+    const int MAX_USERS = 100;
+    
+    int numUsers = howManyLines("users.txt");
+    if (numUsers == -1)
     {
-        printf("Error opening files.\n");
         return -1;
     }
 
-    char buffer[256];
-    int currentLine = 0;
-
-    while (fgets(buffer, sizeof(buffer), file) != NULL)
+    printf("Available users:\n");
+    for (int i = 0; i <= numUsers; i++)
     {
-        currentLine++;
-        if (currentLine != lineNumber)
+        printf("%d. %s\n", i + 1, users[i].username);
+    }
+
+    char username[MAX_USERNAME_LENGTH];
+    printf("Enter the username of the user to delete: ");
+    scanf("%s", username);
+
+    int userLineNumber = -1;
+    for (int i = 0; i < numUsers; i++)
+    {
+        if (strcmp(users[i].username, username) == 0)
         {
-            fprintf(tempFile, "%s", buffer);
-        }
-        else
-        {
-            fprintf(tempFile, "%s\n", newAnswer);
+            userLineNumber = i + 1; // Assuming line numbers start from 1
+            break;
         }
     }
 
-    fclose(file);
-    fclose(tempFile);
-
-    remove(filename);
-    rename("temp_answers.txt", filename);
-
-    printf("Answer edited successfully.\n");
-
-    return 0;
-}
-
-int editByLineNumber(const char *filename, int lineNumber)
-{
-    FILE *file = fopen(filename, "r");
-    FILE *tempFile = fopen("temp_file.txt", "w");
-
-    if (file == NULL || tempFile == NULL)
-    {
-        printf("Error opening files.\n");
-        return -1;
-    }
-
-    char buffer[256];
-    int currentLine = 0;
-
-    while (fgets(buffer, sizeof(buffer), file) != NULL)
-    {
-        currentLine++;
-        if (currentLine != lineNumber)
-        {
-            fprintf(tempFile, "%s", buffer);
-        }
-        else
-        {
-            printf("Current content:\n%s", buffer);
-            printf("Enter 'e' to edit this or 'd' to delete it: ");
-            char choice;
-            scanf(" %c", &choice);
-
-            if (choice == 'e' || choice == 'E')
-            {
-                printf("Enter the new content: ");
-                char newContent[256];
-                getchar(); // Consume the newline left by previous scanf
-                fgets(newContent, sizeof(newContent), stdin);
-                newContent[strcspn(newContent, "\n")] = '\0'; // Remove the newline character
-                fprintf(tempFile, "%s\n", newContent);
-                printf("Edited successfully.\n");
-            }
-            else if (choice == 'd' || choice == 'D')
-            {
-                printf("Deleted successfully.\n");
-                // Skip writing this line to the temporary file
-            }
-            else
-            {
-                fprintf(tempFile, "%s", buffer); // Write the original content if invalid choice
-                printf("Invalid choice. No changes made.\n");
-            }
-        }
-    }
-
-    fclose(file);
-    fclose(tempFile);
-
-    // Replace the original file with the updated content
-    remove(filename);
-    rename("temp_file.txt", filename);
-
-    return 1; // Success
-}
-
-int editQuestion()
-{
-    char choice[2];
-    int validChoice = 0;
-
-    printf("Enter 'n' to choose by line number or 's' to choose by substring: ");
-    scanf(" %1[^\n]", choice); // Read only one character
-
-    if (choice[0] == 'n' || choice[0] == 'N')
-    {
-        int lineNumber;
-        printf("Enter the line number: ");
-        scanf("%d", &lineNumber);
-        getchar(); // Consume newline character
-        if (lineNumber <= 0)
-        {
-            printf("Invalid line number.\n");
-            return -1;
-        }
-        return editByLineNumber("questions.txt", lineNumber);
-    }
-    else if (choice[0] == 's' || choice[0] == 'S')
-    {
-        char searchStr[256];
-        printf("Enter a substring: ");
-        scanf(" %[^\n]", searchStr); // Read the entire line including spaces
-
-        int lineNumber = checker(searchStr, "questions.txt");
-        if (lineNumber <= 0)
-        {
-            printf("No matching line found.\n");
-            return -1;
-        }
-        return editByLineNumber("questions.txt", lineNumber);
-    }
-    else
-    {
-        printf("Invalid choice.\n");
-        return -1;
-    }
-}
-
-int editAnswerQuestion()
-{
-    char choice[2];
-    int validChoice = 0;
-
-    printf("Enter 'n' to choose by line number or 's' to choose by substring: ");
-    scanf(" %1[^\n]", choice); // Read only one character
-
-    if (choice[0] == 'n' || choice[0] == 'N')
-    {
-        int lineNumber;
-        printf("Enter the line number: ");
-        scanf("%d", &lineNumber);
-        getchar(); // Consume newline character
-        if (lineNumber <= 0)
-        {
-            printf("Invalid line number.\n");
-            return -1;
-        }
-
-        char filename[20];
-        printf("Enter 'q' to edit question or 'a' to edit answer: ");
-        scanf(" %1[^\n]", choice); // Read only one character
-
-        if (choice[0] == 'q' || choice[0] == 'Q')
-        {
-            return editByLineNumber("questions.txt", lineNumber);
-        }
-        else if (choice[0] == 'a' || choice[0] == 'A')
-        {
-            return editByLineNumber("answers.txt", lineNumber);
-        }
-        else
-        {
-            printf("Invalid choice.\n");
-            return -1;
-        }
-    }
-    else if (choice[0] == 's' || choice[0] == 'S')
-    {
-        char searchStr[256];
-        printf("Enter a substring: ");
-        scanf(" %[^\n]", searchStr); // Read the entire line including spaces
-
-        // Implement checker function logic to find line number
-        int lineNumber = 1; // Assume lineNumber is found by checker function
-
-        char filename[20];
-        printf("Enter 'q' to edit question or 'a' to edit answer: ");
-        scanf(" %1[^\n]", choice); // Read only one character
-
-        if (choice[0] == 'q' || choice[0] == 'Q')
-        {
-            return editByLineNumber("questions.txt", lineNumber);
-        }
-        else if (choice[0] == 'a' || choice[0] == 'A')
-        {
-            return editByLineNumber("answers.txt", lineNumber);
-        }
-        else
-        {
-            printf("Invalid choice.\n");
-            return -1;
-        }
-    }
-    else
-    {
-        printf("Invalid choice.\n");
-        return -1;
-    }
-}
-
-int deleteUser(char username[])
-{
-    int userLineNumber = checker("users.txt", username);
     if (userLineNumber == -1)
     {
         printf("User not found.\n");
@@ -1171,7 +1206,6 @@ int deleteUser(char username[])
     printf("User deleted successfully.\n");
     return 0;
 }
-
 
 void signUp(user *users, int maxUsers)
 {
@@ -1377,7 +1411,6 @@ void editAnswerorQuestion()
     }
 }
 
-
 void adminMenu()
 {
     char choice;
@@ -1389,10 +1422,9 @@ void adminMenu()
         printf("1. Add user\n");
         printf("2. Delete user\n");
         printf("3. Add question\n");
-        printf("4. \n");
-        printf("5. Add answer\n");
-        printf("6. Edit/D question||answer\n");
-        printf("7. Display the leaderboard\n");
+        printf("4. Add answer\n");
+        printf("5. Edit/D question||answer\n");
+        printf("6. Display the leaderboard\n");
         printf("Q. Quit\n");
         printf("Enter your choice: ");
         scanf(" %c", &choice);
@@ -1407,9 +1439,7 @@ void adminMenu()
             break;
         case '2':
             system("clear");
-            printf("please enter the username of the user");
-            scanf("%s", username);
-            deleteUser(username);
+            deleteUser(p);
             
             break;
         case '3':
@@ -1419,22 +1449,17 @@ void adminMenu()
             break;
         case '4':
             system("clear");
-            printf("this is the leader bord:");
-            displayLeaderboard();
-            
-            break;
-        case '5':
-            system("clear");
             printf("please enter the answer :\n>");
             printinfile("answers.txt");
             break;
-        case '6':
+        case '5':
             system("clear");
             editAnswerorQuestion();
             break;
-        case '7':
+        case '6':
             system("clear");
             printf("this is the leader bord:");
+            displayLeaderboard();
 
             break;
         case 'q':
@@ -1458,10 +1483,10 @@ int main()
   
 
     char choice;
-    printf("Press Enter to sign up or 'l' to log in: ");
+    greeting("hello");
     choice = getchar();
 
-    if (choice == 'l')
+    if (choice == '\n')
     {
         if (login(p,MAXUSERS, username, password) == 9)
         {

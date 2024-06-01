@@ -1,4 +1,3 @@
 line1
 admin
-user1
 user2
