@@ -1,2 +1,4 @@
-Username: userb, Questions Answered: 2, Correct Answers: 1, Final Score: 50.00%
-Username: usera, Questions Answered: 2, Correct Answers: 2, Final Score: 100.00%
+10 8 80.0
+15 12 80.0
+8 6 75.0
+20 18 90.0
